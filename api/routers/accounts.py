@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from api import StandardAPIRouter
 
-router = APIRouter(prefix="/accounts", tags=["Accounts"])
+
+router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])
+
 
 @router.get("")
 async def get_accounts():

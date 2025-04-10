@@ -1,5 +1,4 @@
-from typing import Any
-from enum import StrEnum
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -12,12 +11,10 @@ class CommonQueryParams(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class JSONResponseBodyStatus(StrEnum):
-    SUCCESS = "success"
-    ERROR = "error"
-
-
 class JSONResponseBody(BaseModel):
-    status: JSONResponseBodyStatus
+    status: Literal["success", "error"]
     data: dict[str, Any] = None  # Required If status = "success"
     message: str = None  # Required If status = "error"
+
+    def model_dump(self, **kwargs):
+        return super().model_dump(exclude_unset=True)
