@@ -1,2 +1,5 @@
 # Production
 fastapi[standard]==0.115.12
+
+# Development
+pre-commit==4.2.0
