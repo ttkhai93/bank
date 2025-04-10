@@ -6,6 +6,7 @@ from core.db import engine
 from settings import settings
 
 from api.routers import routers
+from api.exception_handlers import exception_handlers
 
 
 logger = getLogger("uvicorn")
@@ -25,6 +26,9 @@ def create_app() -> FastAPI:
 
     for router in routers:
         new_app.include_router(router)
+
+    for exc_class, handler in exception_handlers:
+        new_app.exception_handler(exc_class)(handler)
 
     return new_app
 
