@@ -18,15 +18,15 @@ class BaseRepository:
         return _result_to_dict(result)
 
     @classmethod
-    async def search(
+    async def get(
         cls,
         offset: int = None,
         limit: int = None,
         order_by: str = None,
         with_for_update: bool = False,
-        **filter_params,
+        **column_filters,
     ):
-        statement = select(cls.table).filter_by(**filter_params)
+        statement = select(cls.table).filter_by(**column_filters)
         if offset:
             statement = statement.offset(offset)
         if limit:
@@ -53,14 +53,14 @@ class BaseRepository:
         return _result_to_dict(result)[0]
 
     @classmethod
-    async def update(cls, values, **filter_params):
-        statement = update(cls.table).values(values).filter_by(**filter_params).returning(*cls.table.columns.values())
+    async def update(cls, values, **column_filters):
+        statement = update(cls.table).values(values).filter_by(**column_filters).returning(*cls.table.columns.values())
         result = await execute(statement)
         return _result_to_dict(result)
 
     @classmethod
-    async def archive(cls, **filter_params):
-        return await cls.update({"archived": True}, **filter_params)
+    async def archive(cls, **column_filters):
+        return await cls.update({"archived": True}, **column_filters)
 
 
 def _result_to_dict(result):
