@@ -47,12 +47,6 @@ class BaseRepository:
         return _result_to_dict(result)
 
     @classmethod
-    async def search_by_id(cls, entity_id, *, with_for_update: bool = False):
-        result = await cls.search(with_for_update=with_for_update, id=entity_id)
-        if result:
-            return result[0]
-
-    @classmethod
     async def create(cls, values):
         statement = insert(cls.table).values(values).returning(*cls.table.columns.values())
         result = await execute(statement)
