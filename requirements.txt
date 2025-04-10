@@ -1,0 +1,2 @@
+# Production
+fastapi[standard]==0.115.12
