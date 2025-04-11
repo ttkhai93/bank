@@ -10,3 +10,8 @@ pydantic_settings==2.8.1
 
 # Development
 pre-commit==4.2.0
+ruff==0.11.4
+pytest==8.3.5
+pytest-asyncio==0.25.3
+pytest-dotenv==0.5.2
+pytest-docker==3.2.0
