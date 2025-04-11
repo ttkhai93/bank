@@ -1,16 +1,24 @@
 import pytest
 from core.db import engine
+from .utils import ctx_engine
 
 
-async def test_engine(postgres_url):
-    with pytest.raises(ValueError):
-        engine.get()  # Cannot get the engine because it hasn't been created
+async def test_get_engine(postgres_url):
+    async with ctx_engine(postgres_url):
+        assert engine.get()
 
-    try:
-        engine.create(postgres_url)
-        assert engine.get()  # Can get the engine now
-    finally:
-        await engine.dispose()
 
+async def test_create_engine_when_already_created(postgres_url):
+    async with ctx_engine(postgres_url):
         with pytest.raises(ValueError):
-            assert engine.get()  # Cannot get the engine because it has been disposed
+            engine.create(postgres_url)
+
+
+async def test_get_engine_when_not_exists():
+    with pytest.raises(ValueError):
+        engine.get()
+
+
+async def test_dispose_engine_when_not_exists():
+    with pytest.raises(ValueError):
+        await engine.dispose()

@@ -1,10 +1,10 @@
 import os
-import contextlib
+from contextlib import contextmanager
 
 from httpx import Response
 
 
-@contextlib.contextmanager
+@contextmanager
 def working_directory(path):
     """Temporarily change the current working directory."""
     original_cwd = os.getcwd()

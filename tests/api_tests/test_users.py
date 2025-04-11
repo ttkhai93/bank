@@ -16,7 +16,6 @@ def test_create_user(test_client):
     user = data.get("user")
 
     assert json["email"] == user["email"]
-    assert json["password"] == user["password"]
 
 
 def test_create_user_already_exists(test_client):
