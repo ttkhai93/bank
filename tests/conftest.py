@@ -53,7 +53,7 @@ def work_in_project_root():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def apply_migrations(test_settings):
+def apply_migrations(test_settings, work_in_project_root):
     """Apply migrations at beginning of test session"""
     config = Config("alembic.ini")
     command.upgrade(config, "head")
