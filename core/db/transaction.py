@@ -2,9 +2,10 @@ from contextvars import ContextVar
 
 from sqlalchemy import CursorResult, Executable
 from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy import exc
 
 from . import engine
-
+from ..errors import ClientError
 
 ctx_connection = ContextVar("CTX_CONNECTION", default=None)
 
@@ -40,7 +41,12 @@ class Transaction:
 async def execute(statement: Executable) -> CursorResult:
     connection: AsyncConnection | None = ctx_connection.get()
     if connection:
-        return await connection.execute(statement)
+        try:
+            return await connection.execute(statement)
+        except exc.IntegrityError as ex:
+            error_detail = str(ex.orig).split("DETAIL:")[1].replace('"', "'")
+            message = error_detail.strip()
+            raise ClientError(message=message)
 
     async with Transaction():
         return await execute(statement)

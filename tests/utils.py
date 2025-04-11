@@ -1,6 +1,8 @@
 import os
 import contextlib
 
+from httpx import Response
+
 
 @contextlib.contextmanager
 def working_directory(path):
@@ -13,8 +15,16 @@ def working_directory(path):
         os.chdir(original_cwd)
 
 
-def get_response_data(response) -> dict:
-    assert response.status_code == 200
+def parse_response_body(response: Response) -> (dict, str):
     response_body = response.json()
-    data = response_body["data"]
-    return data
+    status = response_body.get("status")
+    data = response_body.get("data")
+    message = response_body.get("message")
+
+    if response.status_code == 200:
+        assert status == "success", "'status' field should be 'success'"
+        assert data is not None, "'data' field is expected in the response body: {}".format(response_body)
+    if response.status_code >= 400:
+        assert status == "error", "'status' field should be 'error'"
+        assert message is not None, "'message' field is expected in the response body: {}".format(response_body)
+    return data, message

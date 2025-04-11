@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import Table, select, insert, update, text
 
 from ..db.transaction import execute
@@ -47,13 +49,13 @@ class BaseRepository:
         return _result_to_dict(result)
 
     @classmethod
-    async def create(cls, values):
+    async def create(cls, values: dict[str, Any]):
         statement = insert(cls.table).values(values).returning(*cls.table.columns.values())
         result = await execute(statement)
         return _result_to_dict(result)[0]
 
     @classmethod
-    async def update(cls, values, **column_filters):
+    async def update(cls, values: dict[str, Any], **column_filters):
         statement = update(cls.table).values(values).filter_by(**column_filters).returning(*cls.table.columns.values())
         result = await execute(statement)
         return _result_to_dict(result)
