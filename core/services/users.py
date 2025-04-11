@@ -1,11 +1,11 @@
 from ..repositories import UserRepository
+from ..utils import hash_password
 
 
 class UserService:
-    @staticmethod
-    async def get_users(**kwargs):
+    async def get_users(self, **kwargs):
         return await UserRepository.get(**kwargs)
 
-    @staticmethod
-    async def create_user(user):
+    async def create_user(self, user: dict):
+        user["password"] = hash_password(user["password"])
         return await UserRepository.create(user)
