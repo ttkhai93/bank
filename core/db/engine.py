@@ -13,7 +13,7 @@ def create(connection_url: str, **kwargs):
 
 def get() -> AsyncEngine:
     if _engine is None:
-        raise ValueError("Cannot get connection because engine not created")
+        raise ValueError("Cannot get the engine because it hasn't been created")
     return _engine
 
 
