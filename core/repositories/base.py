@@ -1,6 +1,7 @@
 from typing import Any
 
 from sqlalchemy import Table, select, insert, update, text
+from arrow import Arrow
 
 from ..db.transaction import execute
 
@@ -66,4 +67,9 @@ class BaseRepository:
 
 
 def _result_to_dict(result):
-    return [dict(zip(result.keys(), row)) for row in result]
+    records = [dict(zip(result.keys(), row)) for row in result]
+    for record in records:
+        for field, value in record.items():
+            if isinstance(value, Arrow):
+                record[field] = value.isoformat()
+    return records
