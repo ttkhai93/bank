@@ -12,13 +12,13 @@ router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])
 account_service = AccountService()
 
 
-@router.get("/")
+@router.get("")
 async def get_accounts(query: Annotated[CommonQueryParams, Query()]):
     accounts = await account_service.get_accounts(**query.model_dump())
     return {"accounts": accounts}
 
 
-@router.post("/")
+@router.post("")
 async def create_account(body: CreateAccountRequest):
     account = await account_service.create_account(body.model_dump())
     return {"account": account}

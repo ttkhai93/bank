@@ -2,7 +2,7 @@ import os
 import asyncio
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from alembic import command
 from alembic.config import Config
@@ -53,11 +53,12 @@ def apply_migrations(test_settings, work_in_project_root):
 
 
 @pytest.fixture(scope="function")
-def test_client():
+async def new_client():
     from main import app
 
-    with TestClient(app) as test_client:
-        yield test_client
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as client:
+            yield client
 
 
 @pytest.fixture(scope="function", autouse=True)
