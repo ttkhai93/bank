@@ -20,4 +20,4 @@ async def get_users(query: Annotated[CommonQueryParams, Query()]):
 @router.post("/")
 async def create_user(body: CreateUserRequest):
     user = await user_service.create_user(body.model_dump())
-    return {"user": CreateUserResponse(email=user["email"])}
+    return {"user": CreateUserResponse(**user)}
