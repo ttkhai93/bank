@@ -16,8 +16,8 @@ class AccountService:
             to_account_id = tx_info["to_account_id"]
             amount = tx_info["amount"]
 
-            from_account = await AccountRepository.get_by_id(from_account_id)
-            to_account = await AccountRepository.get_by_id(to_account_id)
+            from_account = await AccountRepository.get_by_id(from_account_id, with_for_update=True)
+            to_account = await AccountRepository.get_by_id(to_account_id, with_for_update=True)
 
             if from_account["amount"] < amount:
                 raise ClientError(
