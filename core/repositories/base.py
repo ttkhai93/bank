@@ -50,6 +50,13 @@ class BaseRepository:
         return _result_to_dict(result)
 
     @classmethod
+    async def get_by_id(cls, record_id: str, with_for_update: bool = False) -> dict | None:
+        records = await cls.get(id=record_id, with_for_update=with_for_update)
+        if not records:
+            return None
+        return records[0]
+
+    @classmethod
     async def create(cls, values: dict[str, Any]):
         statement = insert(cls.table).values(values).returning(*cls.table.columns.values())
         result = await execute(statement)

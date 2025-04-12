@@ -5,7 +5,7 @@ from fastapi import Query
 from core.services import AccountService
 from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
-from api.schemas.account import CreateAccountRequest
+from api.schemas.account import CreateAccountRequest, TransferRequest
 
 
 router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])
@@ -22,3 +22,9 @@ async def get_accounts(query: Annotated[CommonQueryParams, Query()]):
 async def create_account(body: CreateAccountRequest):
     account = await account_service.create_account(body.model_dump())
     return {"account": account}
+
+
+@router.post("/transfer")
+async def transfer(body: TransferRequest):
+    transaction = await account_service.transfer(body.model_dump())
+    return {"transaction": transaction}

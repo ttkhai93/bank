@@ -13,3 +13,7 @@ def base_columns():
         Column("updated", ArrowType, nullable=False, server_default=now_at_utc),
         Column("archived", Boolean, server_default="false"),
     )
+
+
+def get_enum_values(enum_members):
+    return [member.value for member in enum_members]
