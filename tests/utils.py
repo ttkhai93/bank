@@ -1,7 +1,18 @@
 import os
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 
 from httpx import Response
+
+from core.db import engine
+
+
+@asynccontextmanager
+async def ctx_engine(postgres_url):
+    try:
+        engine.create(postgres_url)
+        yield
+    finally:
+        await engine.dispose()
 
 
 @contextmanager

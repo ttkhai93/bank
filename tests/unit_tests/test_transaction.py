@@ -2,7 +2,7 @@ import pytest
 from core.db.transaction import Transaction, execute, _ctx_connection
 from sqlalchemy import text
 
-from .utils import ctx_engine
+from ..utils import ctx_engine
 
 
 async def test_use_transaction_context_manager(postgres_url):

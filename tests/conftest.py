@@ -1,17 +1,16 @@
 import os
 import asyncio
 
-from sqlalchemy import text
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from alembic import command
 from alembic.config import Config
-import pytest
 
-from core.db import engine
-from settings import settings
 from core.models.base import metadata
-from .utils import working_directory
-from core.db.transaction import Transaction
+from core.db.transaction import execute
+from settings import settings
+from .utils import working_directory, ctx_engine
 
 
 @pytest.fixture(scope="session")
@@ -23,20 +22,14 @@ def postgres_url(docker_services, docker_ip):
         try:
 
             async def check() -> bool:
-                result = False
-                try:
-                    engine.create(url)
-                    async with Transaction():
-                        result = True
-                finally:
-                    await engine.dispose()
-                    return result
+                async with ctx_engine(url):
+                    return bool(await execute(text("SELECT 1;")))
 
             return asyncio.run(check())
         except Exception:
             return False
 
-    docker_services.wait_until_responsive(check=check_connection, timeout=5, pause=0.1)
+    docker_services.wait_until_responsive(check=check_connection, timeout=5, pause=0.5)
     return url
 
 
@@ -71,11 +64,7 @@ def test_client():
 async def reset_db(postgres_url):
     """Reset database"""
     yield
-    try:
-        engine.create(postgres_url)
-        async with Transaction() as conn:
-            for table in metadata.tables.keys():
-                sql = f"TRUNCATE TABLE {table} CASCADE"
-                await conn.execute(text(sql))
-    finally:
-        await engine.dispose()
+    async with ctx_engine(postgres_url):
+        for table in metadata.tables.keys():
+            sql = f"TRUNCATE TABLE {table} CASCADE"
+            await execute(text(sql))

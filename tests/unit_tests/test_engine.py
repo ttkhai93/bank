@@ -1,6 +1,6 @@
 import pytest
 from core.db import engine
-from .utils import ctx_engine
+from ..utils import ctx_engine
 
 
 async def test_get_engine(postgres_url):
