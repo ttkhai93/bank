@@ -15,7 +15,7 @@ logger = getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     logger.info("Setting up resources before startup complete.")
-    engine.create(settings.DATABASE_URL)
+    engine.create(settings.DATABASE_URL, echo=settings.DATABASE_ECHO)
     yield
     logger.info("Cleaning up resources before shutdown complete.")
     await engine.dispose()
