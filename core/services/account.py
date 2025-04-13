@@ -13,6 +13,12 @@ class AccountService:
     async def get_account_by_id(self, account_id: UUID):
         return await AccountRepository.get_by_id(account_id)
 
+    async def get_account_transactions(self, account_id: UUID):
+        account = await AccountRepository.get_by_id(account_id)
+
+        sql = "SELECT * FROM transaction WHERE to_account_id = :account_id or from_account_id = :account_id"
+        return await TransactionRepository.execute_text_clause(sql, account_id=account["id"])
+
     async def create_account(self, account: dict):
         return await AccountRepository.create(account)
 

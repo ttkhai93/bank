@@ -25,6 +25,12 @@ async def get_account_by_id(id: UUID):
     return {"account": account}
 
 
+@router.get("/{id}/transactions")
+async def get_account_transactions(id: UUID):
+    transactions = await account_service.get_account_transactions(id)
+    return {"transactions": transactions}
+
+
 @router.post("")
 async def create_account(body: CreateAccountRequest):
     account = await account_service.create_account(body.model_dump())
