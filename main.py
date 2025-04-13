@@ -10,6 +10,7 @@ from api.exception_handlers import exception_handlers
 
 
 logging.basicConfig(level=settings.LOG_LEVEL)
+logging.getLogger("sqlalchemy.engine").setLevel(settings.LOG_LEVEL)
 
 
 @asynccontextmanager
