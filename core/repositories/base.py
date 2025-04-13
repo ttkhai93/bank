@@ -27,7 +27,7 @@ class BaseRepository:
         offset: int = None,
         limit: int = None,
         order_by: str = None,
-        with_for_update: bool = False,
+        for_update: bool = False,
         **column_filters,
     ):
         statement = select(cls.table).filter_by(**column_filters)
@@ -44,15 +44,15 @@ class BaseRepository:
                     statement = statement.order_by(text(f"{column}"))
                 else:
                     statement = statement.order_by(text(f"{column} DESC"))
-        if with_for_update:
+        if for_update:
             statement = statement.with_for_update()
 
         result = await execute(statement)
         return _result_to_dict(result)
 
     @classmethod
-    async def get_by_id(cls, record_id: UUID, with_for_update: bool = False) -> dict | None:
-        records = await cls.get(id=record_id, with_for_update=with_for_update)
+    async def get_by_id(cls, record_id: UUID, for_update: bool = False) -> dict | None:
+        records = await cls.get(id=record_id, for_update=for_update)
         if not records:
             return None
         return records[0]
