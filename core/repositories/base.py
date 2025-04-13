@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import Table, select, insert, update, text
 from arrow import Arrow
@@ -50,7 +51,7 @@ class BaseRepository:
         return _result_to_dict(result)
 
     @classmethod
-    async def get_by_id(cls, record_id: str, with_for_update: bool = False) -> dict | None:
+    async def get_by_id(cls, record_id: UUID, with_for_update: bool = False) -> dict | None:
         records = await cls.get(id=record_id, with_for_update=with_for_update)
         if not records:
             return None

@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Query
 
@@ -16,6 +17,12 @@ account_service = AccountService()
 async def get_accounts(query: Annotated[CommonQueryParams, Query()]):
     accounts = await account_service.get_accounts(**query.model_dump())
     return {"accounts": accounts}
+
+
+@router.get("/{id}")
+async def get_account_by_id(id: UUID):
+    account = await account_service.get_account_by_id(id)
+    return {"account": account}
 
 
 @router.post("")

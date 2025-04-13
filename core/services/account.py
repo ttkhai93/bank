@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from core.db.transaction import Transaction
 from core.db.decorators import retry_on_deadlock_error
 from core.errors import ClientError
@@ -7,6 +9,9 @@ from ..repositories import AccountRepository, TransactionRepository
 class AccountService:
     async def get_accounts(self, **kwargs):
         return await AccountRepository.get(**kwargs)
+
+    async def get_account_by_id(self, account_id: UUID):
+        return await AccountRepository.get_by_id(account_id)
 
     async def create_account(self, account: dict):
         return await AccountRepository.create(account)
