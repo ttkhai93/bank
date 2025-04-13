@@ -1,4 +1,5 @@
 from core.db.transaction import Transaction
+from core.db.decorators import retry_on_deadlock_error
 from core.errors import ClientError
 from ..repositories import AccountRepository, TransactionRepository
 
@@ -10,6 +11,7 @@ class AccountService:
     async def create_account(self, account: dict):
         return await AccountRepository.create(account)
 
+    @retry_on_deadlock_error()
     async def transfer(self, tx_info: dict):
         async with Transaction():
             from_account_id = tx_info["from_account_id"]
