@@ -1,6 +1,5 @@
 import asyncio
 
-
 from core.repositories import UserRepository, AssetRepository, AccountRepository
 from tests.utils import parse_response_body
 
@@ -52,7 +51,7 @@ async def test_transfer_success(new_client):
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
 
-async def test_duplicate_transfer_success(new_client):
+async def test_transfer_success_in_lost_update_scenario(new_client):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})
 
@@ -70,6 +69,30 @@ async def test_duplicate_transfer_success(new_client):
 
     assert from_account["amount"] == json["amount"] - tx_info["amount"] * 2
     assert to_account["amount"] == json["amount"] + tx_info["amount"] * 2
+
+
+async def test_transfer_success_in_deadlock_scenario(new_client):
+    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    asset = await AssetRepository.create({"code": "example", "name": "example"})
+
+    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 5000}
+    from_account = await AccountRepository.create(json)
+    to_account = await AccountRepository.create(json)
+
+    tx_info1 = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
+    tx_info2 = {"from_account_id": str(to_account["id"]), "to_account_id": str(from_account["id"]), "amount": 1000}
+    await asyncio.gather(
+        new_client.post("/accounts/transfer", json=tx_info1),
+        new_client.post("/accounts/transfer", json=tx_info2),
+        new_client.post("/accounts/transfer", json=tx_info1),
+        new_client.post("/accounts/transfer", json=tx_info2),
+    )
+
+    from_account = await AccountRepository.get_by_id(from_account["id"])
+    to_account = await AccountRepository.get_by_id(to_account["id"])
+
+    assert from_account["amount"] == json["amount"]
+    assert to_account["amount"] == json["amount"]
 
 
 async def test_transfer_not_enough_funds(new_client):
