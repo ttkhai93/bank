@@ -3,11 +3,15 @@ from logging import getLogger
 
 import sqlalchemy
 
-logger = getLogger(__name__)
-
 
 def retry_on_serialization_error(max_retries=3, delay=0.1):
-    logger = getLogger("retry_on_serialization_error")
+    """
+    Recommend: max_retries + 1 >= expected max concurrent requests
+    :param max_retries: int
+    :param delay: float
+    :return:
+    """
+    logger = getLogger(f"{__name__}.retry_on_serialization_error")
 
     def decorator(func):
         async def wrapper(*args, **kwargs):
@@ -27,7 +31,7 @@ def retry_on_serialization_error(max_retries=3, delay=0.1):
                     retries += 1
                     logger.debug(f"Retrying in {delay} seconds...")
                     await asyncio.sleep(delay * (2**retries))
-                    logger.debug(f"Retry attempt: {retries}")
+                    logger.warning(f"Retry attempt: {retries}")
 
         return wrapper
 
@@ -35,7 +39,13 @@ def retry_on_serialization_error(max_retries=3, delay=0.1):
 
 
 def retry_on_deadlock_error(max_retries=3, delay=0.1):
-    logger = getLogger("retry_on_deadlock_error")
+    """
+    Recommend: max_retries + 1 >= expected max concurrent requests
+    :param max_retries: int
+    :param delay: float
+    :return:
+    """
+    logger = getLogger(f"{__name__}.retry_on_deadlock_error")
 
     def decorator(func):
         async def wrapper(*args, **kwargs):
@@ -55,7 +65,7 @@ def retry_on_deadlock_error(max_retries=3, delay=0.1):
                     retries += 1
                     logger.debug(f"Retrying in {delay} seconds...")
                     await asyncio.sleep(delay * (2**retries))
-                    logger.debug(f"Retry attempt: {retries}")
+                    logger.warning(f"Retry attempt: {retries}")
 
         return wrapper
 
@@ -63,7 +73,13 @@ def retry_on_deadlock_error(max_retries=3, delay=0.1):
 
 
 def retry_on_version_conflict_error(max_retries=3, delay=0.1):
-    logger = getLogger("retry_on_version_conflict_error")
+    """
+    Recommend: max_retries + 1 >= expected max concurrent requests
+    :param max_retries: int
+    :param delay: float
+    :return:
+    """
+    logger = getLogger(f"{__name__}.retry_on_version_conflict_error")
 
     def decorator(func):
         async def wrapper(*args, **kwargs):
@@ -83,7 +99,7 @@ def retry_on_version_conflict_error(max_retries=3, delay=0.1):
                     retries += 1
                     logger.debug(f"Retrying in {delay} seconds...")
                     await asyncio.sleep(delay * (2**retries))
-                    logger.debug(f"Retry attempt: {retries}")
+                    logger.warning(f"Retry attempt: {retries}")
 
         return wrapper
 
