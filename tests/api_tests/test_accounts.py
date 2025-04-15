@@ -54,9 +54,15 @@ async def test_transfer_success(new_client):
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
 
-@pytest.mark.parametrize("concurrent_requests", [10])
-# @pytest.mark.parametrize("concurrent_requests", [1000])
-async def test_transfer_success_in_lost_update_scenario(new_client, concurrent_requests):
+@pytest.mark.parametrize(
+    "url, concurrent_requests, expected_version",
+    [
+        ("/v1/accounts/transfer", 10, 0),
+        ("/v2/accounts/transfer_isolation_level", 4, 0),
+        ("/v2/accounts/transfer_optimistic_locking", 4, 4),
+    ],
+)
+async def test_transfer_success_in_lost_update_scenario(new_client, url, concurrent_requests, expected_version):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})
 
@@ -68,7 +74,7 @@ async def test_transfer_success_in_lost_update_scenario(new_client, concurrent_r
 
     requests = []
     for i in range(concurrent_requests):
-        requests.append(new_client.post("/v1/accounts/transfer", json=tx_info))
+        requests.append(new_client.post(url, json=tx_info))
     await asyncio.gather(*requests)
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
@@ -76,56 +82,19 @@ async def test_transfer_success_in_lost_update_scenario(new_client, concurrent_r
 
     assert from_account["amount"] == json["amount"] - tx_info["amount"] * concurrent_requests
     assert to_account["amount"] == json["amount"] + tx_info["amount"] * concurrent_requests
+    assert from_account["version"] == expected_version
+    assert to_account["version"] == expected_version
 
 
-@pytest.mark.parametrize("concurrent_requests", [4])
-async def test_transfer_success_in_lost_update_scenario_use_isolation_level(new_client, concurrent_requests):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
-
-    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_requests}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
-
-    tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    requests = []
-    for i in range(concurrent_requests):
-        requests.append(new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info))
-    await asyncio.gather(*requests)
-
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
-
-    assert from_account["amount"] == json["amount"] - tx_info["amount"] * concurrent_requests
-    assert to_account["amount"] == json["amount"] + tx_info["amount"] * concurrent_requests
-
-
-@pytest.mark.parametrize("concurrent_requests", [4])
-async def test_transfer_success_in_lost_update_scenario_use_optimistic_locking(new_client, concurrent_requests):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
-
-    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_requests}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
-
-    tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    requests = []
-    for i in range(concurrent_requests):
-        requests.append(new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info))
-    await asyncio.gather(*requests)
-
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
-
-    assert from_account["amount"] == json["amount"] - tx_info["amount"] * concurrent_requests
-    assert to_account["amount"] == json["amount"] + tx_info["amount"] * concurrent_requests
-    assert from_account["version"] == concurrent_requests
-    assert to_account["version"] == concurrent_requests
-
-
-@pytest.mark.parametrize("concurrent_deadlocks", [2])
-async def test_transfer_success_in_deadlock_scenario(new_client, concurrent_deadlocks):
+@pytest.mark.parametrize(
+    "url, concurrent_deadlocks, expected_version",
+    [
+        ("/v1/accounts/transfer", 2, 0),
+        ("/v2/accounts/transfer_isolation_level", 2, 0),
+        ("/v2/accounts/transfer_optimistic_locking", 2, 4),
+    ],
+)
+async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent_deadlocks, expected_version):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})
 
@@ -139,8 +108,8 @@ async def test_transfer_success_in_deadlock_scenario(new_client, concurrent_dead
     for i in range(concurrent_deadlocks):
         requests.extend(
             [
-                new_client.post("/v1/accounts/transfer", json=tx_info1),
-                new_client.post("/v1/accounts/transfer", json=tx_info2),
+                new_client.post(url, json=tx_info1),
+                new_client.post(url, json=tx_info2),
             ]
         )
     await asyncio.gather(*requests)
@@ -150,64 +119,8 @@ async def test_transfer_success_in_deadlock_scenario(new_client, concurrent_dead
 
     assert from_account["amount"] == json["amount"]
     assert to_account["amount"] == json["amount"]
-
-
-@pytest.mark.parametrize("concurrent_deadlocks", [2])
-async def test_transfer_success_in_deadlock_scenario_use_isolation_level(new_client, concurrent_deadlocks):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
-
-    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_deadlocks}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
-
-    tx_info1 = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    tx_info2 = {"from_account_id": str(to_account["id"]), "to_account_id": str(from_account["id"]), "amount": 1000}
-    requests = []
-    for i in range(concurrent_deadlocks):
-        requests.extend(
-            [
-                new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info1),
-                new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info2),
-            ]
-        )
-    await asyncio.gather(*requests)
-
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
-
-    assert from_account["amount"] == json["amount"]
-    assert to_account["amount"] == json["amount"]
-
-
-@pytest.mark.parametrize("concurrent_deadlocks", [2])
-async def test_transfer_success_in_deadlock_scenario_use_optimistic_locking(new_client, concurrent_deadlocks):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
-
-    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_deadlocks}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
-
-    tx_info1 = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    tx_info2 = {"from_account_id": str(to_account["id"]), "to_account_id": str(from_account["id"]), "amount": 1000}
-    requests = []
-    for i in range(concurrent_deadlocks):
-        requests.extend(
-            [
-                new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info1),
-                new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info2),
-            ]
-        )
-    await asyncio.gather(*requests)
-
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
-
-    assert from_account["amount"] == json["amount"]
-    assert to_account["amount"] == json["amount"]
-    assert from_account["version"] == 2 * concurrent_deadlocks
-    assert to_account["version"] == 2 * concurrent_deadlocks
+    assert from_account["version"] == expected_version
+    assert to_account["version"] == expected_version
 
 
 async def test_transfer_not_enough_funds(new_client):
