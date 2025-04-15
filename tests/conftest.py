@@ -66,6 +66,6 @@ async def reset_db(postgres_url):
     """Reset database"""
     yield
     async with ctx_engine(postgres_url):
-        for table in metadata.tables.keys():
-            sql = f"TRUNCATE TABLE {table} CASCADE"
-            await execute(text(sql))
+        tables = ", ".join(metadata.tables.keys())
+        sql = f"TRUNCATE TABLE {tables} CASCADE"
+        await execute(text(sql))
