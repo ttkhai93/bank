@@ -6,10 +6,16 @@ from core.services import UserService
 from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
 from api.schemas.users import CreateUserRequest, CreateUserResponse
+from api.routers.auth import AuthenticatedUserAnnotated
 
 
 router = StandardAPIRouter(prefix="/users", tags=["Users"])
 user_service = UserService()
+
+
+@router.get("/me")
+async def get_user_info(auth_user: AuthenticatedUserAnnotated):
+    return {"user_id": auth_user.id}
 
 
 @router.get("")
