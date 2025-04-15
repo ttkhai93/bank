@@ -41,15 +41,3 @@ async def create_account(body: CreateAccountRequest):
 async def transfer(body: TransferRequest):
     transaction = await account_service.transfer(body.model_dump())
     return {"transaction": transaction}
-
-
-@router.post("/transfer_isolation_level")
-async def transfer_isolation_level(body: TransferRequest):
-    transaction = await account_service.transfer_isolation_level(body.model_dump())
-    return {"transaction": transaction}
-
-
-@router.post("/transfer_optimistic_locking")
-async def transfer_optimistic_locking(body: TransferRequest):
-    transaction = (await account_service.transfer_optimistic_locking(body.model_dump()),)
-    return {"transaction": transaction}

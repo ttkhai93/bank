@@ -2,7 +2,7 @@ from tests.utils import parse_response_body
 
 
 async def test_get_asset(new_client):
-    res = await new_client.get("/assets")
+    res = await new_client.get("/v1/assets")
     data, _ = parse_response_body(res)
     assets = data.get("assets")
 
@@ -11,7 +11,7 @@ async def test_get_asset(new_client):
 
 async def test_create_asset(new_client):
     json = {"code": "example", "name": "example"}
-    res = await new_client.post("/assets", json=json)
+    res = await new_client.post("/v1/assets", json=json)
     data, _ = parse_response_body(res)
     asset = data.get("asset")
 
@@ -21,11 +21,11 @@ async def test_create_asset(new_client):
 
 async def test_create_asset_already_exists(new_client):
     json = {"code": "example", "name": "example"}
-    res = await new_client.post("/assets", json=json)
+    res = await new_client.post("/v1/assets", json=json)
     data, _ = parse_response_body(res)
 
     json = {"code": "example", "name": "example"}
-    res = await new_client.post("/assets", json=json)
+    res = await new_client.post("/v1/assets", json=json)
     _, message = parse_response_body(res)
 
     assert message == "Key (code)=(example) already exists."

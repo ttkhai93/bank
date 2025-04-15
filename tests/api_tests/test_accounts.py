@@ -7,7 +7,7 @@ from tests.utils import parse_response_body
 
 
 async def test_get_account(new_client):
-    res = await new_client.get("/accounts")
+    res = await new_client.get("/v1/accounts")
     data, _ = parse_response_body(res)
     accounts = data.get("accounts")
 
@@ -19,7 +19,7 @@ async def test_create_account(new_client):
     asset = await AssetRepository.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
-    res = await new_client.post("/accounts", json=json)
+    res = await new_client.post("/v1/accounts", json=json)
     data, _ = parse_response_body(res)
     account = data.get("account")
 
@@ -38,7 +38,7 @@ async def test_transfer_success(new_client):
     to_account = await AccountRepository.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    res = await new_client.post("/accounts/transfer", json=tx_info)
+    res = await new_client.post("/v1/accounts/transfer", json=tx_info)
     data, _ = parse_response_body(res)
     transaction = data.get("transaction")
 
@@ -67,7 +67,7 @@ async def test_transfer_success_in_lost_update_scenario(new_client, concurrent_r
 
     requests = []
     for i in range(concurrent_requests):
-        requests.append(new_client.post("/accounts/transfer", json=tx_info))
+        requests.append(new_client.post("/v1/accounts/transfer", json=tx_info))
     await asyncio.gather(*requests)
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
@@ -89,7 +89,7 @@ async def test_transfer_success_in_lost_update_scenario_use_isolation_level(new_
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     requests = []
     for i in range(concurrent_requests):
-        requests.append(new_client.post("/accounts/transfer_isolation_level", json=tx_info))
+        requests.append(new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info))
     await asyncio.gather(*requests)
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
@@ -111,7 +111,7 @@ async def test_transfer_success_in_lost_update_scenario_use_optimistic_locking(n
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     requests = []
     for i in range(concurrent_requests):
-        requests.append(new_client.post("/accounts/transfer_optimistic_locking", json=tx_info))
+        requests.append(new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info))
     await asyncio.gather(*requests)
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
@@ -138,8 +138,8 @@ async def test_transfer_success_in_deadlock_scenario(new_client, concurrent_dead
     for i in range(concurrent_deadlocks):
         requests.extend(
             [
-                new_client.post("/accounts/transfer", json=tx_info1),
-                new_client.post("/accounts/transfer", json=tx_info2),
+                new_client.post("/v1/accounts/transfer", json=tx_info1),
+                new_client.post("/v1/accounts/transfer", json=tx_info2),
             ]
         )
     await asyncio.gather(*requests)
@@ -166,8 +166,8 @@ async def test_transfer_success_in_deadlock_scenario_use_isolation_level(new_cli
     for i in range(concurrent_deadlocks):
         requests.extend(
             [
-                new_client.post("/accounts/transfer_isolation_level", json=tx_info1),
-                new_client.post("/accounts/transfer_isolation_level", json=tx_info2),
+                new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info1),
+                new_client.post("/v2/accounts/transfer_isolation_level", json=tx_info2),
             ]
         )
     await asyncio.gather(*requests)
@@ -194,8 +194,8 @@ async def test_transfer_success_in_deadlock_scenario_use_optimistic_locking(new_
     for i in range(concurrent_deadlocks):
         requests.extend(
             [
-                new_client.post("/accounts/transfer_optimistic_locking", json=tx_info1),
-                new_client.post("/accounts/transfer_optimistic_locking", json=tx_info2),
+                new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info1),
+                new_client.post("/v2/accounts/transfer_optimistic_locking", json=tx_info2),
             ]
         )
     await asyncio.gather(*requests)
@@ -218,7 +218,7 @@ async def test_transfer_not_enough_funds(new_client):
     to_account = await AccountRepository.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    res = await new_client.post("/accounts/transfer", json=tx_info)
+    res = await new_client.post("/v1/accounts/transfer", json=tx_info)
     _, message = parse_response_body(res)
 
     assert message == "Account doesn't have enough funds. Amount: {amount}, Transfer amount: {transfer_amount}".format(
@@ -238,7 +238,7 @@ async def test_transfer_different_asset_account(new_client):
     to_account = await AccountRepository.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    res = await new_client.post("/accounts/transfer", json=tx_info)
+    res = await new_client.post("/v1/accounts/transfer", json=tx_info)
     _, message = parse_response_body(res)
 
     assert message == "Cannot transfer to a different asset account."

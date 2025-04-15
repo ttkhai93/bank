@@ -10,7 +10,7 @@ from api.schemas.auth import LoginResponse, AuthenticatedUser
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/new_token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/new_token", auto_error=False)
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):

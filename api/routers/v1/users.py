@@ -6,7 +6,7 @@ from core.services import UserService
 from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
 from api.schemas.users import CreateUserRequest, CreateUserResponse
-from api.routers.auth import AuthenticatedUserAnnotated
+from .auth import AuthenticatedUserAnnotated
 
 
 router = StandardAPIRouter(prefix="/users", tags=["Users"])

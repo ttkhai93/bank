@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from core.db import engine
 from settings import settings
-from api.routers import routers
+from api.routers import v1_router, v2_router
 from api.exception_handlers import exception_handlers
 
 
@@ -22,9 +22,8 @@ async def lifespan(_: FastAPI):
 
 def create_app() -> FastAPI:
     new_app = FastAPI(lifespan=lifespan)
-
-    for router in routers:
-        new_app.include_router(router)
+    new_app.include_router(v1_router)
+    new_app.include_router(v2_router)
 
     for exc_class, handler in exception_handlers:
         new_app.exception_handler(exc_class)(handler)
