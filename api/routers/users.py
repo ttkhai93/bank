@@ -7,6 +7,7 @@ from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
 from api.schemas.users import CreateUserRequest, CreateUserResponse
 
+
 router = StandardAPIRouter(prefix="/users", tags=["Users"])
 user_service = UserService()
 
