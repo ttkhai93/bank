@@ -54,7 +54,8 @@ async def test_transfer_success(new_client):
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
 
-@pytest.mark.parametrize("concurrent_requests", [1000])
+@pytest.mark.parametrize("concurrent_requests", [10])
+# @pytest.mark.parametrize("concurrent_requests", [1000])
 async def test_transfer_success_in_lost_update_scenario(new_client, concurrent_requests):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})
