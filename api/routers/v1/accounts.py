@@ -3,14 +3,13 @@ from uuid import UUID
 
 from fastapi import Query
 
-from core.services import AccountService
+from core.services import account_service
 from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
 from api.schemas.account import CreateAccountRequest, TransferRequest
 
 
 router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])
-account_service = AccountService()
 
 
 @router.get("")

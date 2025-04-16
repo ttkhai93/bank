@@ -1,10 +1,9 @@
-from core.services import AccountService
+from core.services import account_service
 from api import StandardAPIRouter
 from api.schemas.account import TransferRequest
 
 
 router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])
-account_service = AccountService()
 
 
 @router.post("/transfer_isolation_level")

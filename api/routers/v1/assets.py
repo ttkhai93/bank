@@ -2,13 +2,12 @@ from typing import Annotated
 
 from fastapi import Query
 
-from core.services import AssetService
+from core.services import asset_service
 from api import StandardAPIRouter
 from api.schemas import CommonQueryParams
 from api.schemas.asset import CreateAssetRequest
 
 router = StandardAPIRouter(prefix="/assets", tags=["Assets"])
-asset_service = AssetService()
 
 
 @router.get("")
