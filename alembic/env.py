@@ -2,6 +2,7 @@ import asyncio
 from logging.config import fileConfig
 
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import pool
 from alembic import context
 
 from core.models.base import metadata
@@ -52,7 +53,7 @@ async def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    async_engine = create_async_engine(settings.DATABASE_URL)
+    async_engine = create_async_engine(settings.DATABASE_URL, poolclass=pool.NullPool)
 
     async with async_engine.connect() as connection:
         await connection.run_sync(run_migrations)
