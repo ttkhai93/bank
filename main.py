@@ -4,18 +4,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from core.db import engine
-from settings import settings
+from settings import app_settings, db_settings
 from api.routers import v1_router, v2_router
 from api.exception_handlers import exception_handlers
 
 
-logging.basicConfig(level=settings.LOG_LEVEL)
-logging.getLogger("sqlalchemy.engine").setLevel(settings.LOG_LEVEL)
+logging.basicConfig(level=app_settings.LOG_LEVEL)
+logging.getLogger("sqlalchemy.engine").setLevel(app_settings.LOG_LEVEL)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    engine.create(settings.DATABASE_URL)
+    engine.create(db_settings.DATABASE_URL)
     yield
     await engine.dispose()
 

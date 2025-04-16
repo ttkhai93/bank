@@ -9,7 +9,7 @@ from alembic.config import Config
 
 from core.models.base import metadata
 from core.db.transaction import execute
-from settings import settings
+from settings import db_settings
 from .utils import working_directory, ctx_engine
 
 
@@ -35,7 +35,7 @@ def postgres_url(docker_services, docker_ip):
 
 @pytest.fixture(scope="session", autouse=True)
 def test_settings(postgres_url):
-    settings.DATABASE_URL = postgres_url
+    db_settings.DATABASE_URL = postgres_url
 
 
 @pytest.fixture(scope="session", autouse=True)
