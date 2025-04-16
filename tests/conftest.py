@@ -8,9 +8,9 @@ from alembic import command
 from alembic.config import Config
 
 from core.models.base import metadata
-from core.db.transaction import execute
+from core.db import engine, execute
 from settings import db_settings
-from .utils import working_directory, ctx_engine
+from .utils import working_directory
 
 
 @pytest.fixture(scope="session")
@@ -22,7 +22,7 @@ def postgres_url(docker_services, docker_ip):
         try:
 
             async def check() -> bool:
-                async with ctx_engine(url):
+                async with engine.context(url):
                     return bool(await execute(text("SELECT 1;")))
 
             return asyncio.run(check())
@@ -65,7 +65,7 @@ async def new_client():
 async def reset_db(postgres_url):
     """Reset database"""
     yield
-    async with ctx_engine(postgres_url):
+    async with engine.context(postgres_url):
         tables = ", ".join(metadata.tables.keys())
         sql = f"TRUNCATE TABLE {tables} CASCADE"
         await execute(text(sql))

@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from core.db.transaction import Transaction
-from core.db.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
+from core.db import Transaction
+from core.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
 from core.errors import ClientError
 from ..repositories import AccountRepository, TransactionRepository
 

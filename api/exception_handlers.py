@@ -1,5 +1,6 @@
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
+from sqlalchemy.exc import IntegrityError
 from core.errors import ClientError
 from .json_response import standardize_json_response
 
@@ -15,7 +16,15 @@ async def validation_exception_handler(_, exc: RequestValidationError):
     return standardize_json_response(body=body, status_code=400)
 
 
+async def integrity_exception_handler(_, exc: IntegrityError):
+    error_detail = str(exc.orig).split("DETAIL:")[1].replace('"', "'")
+    message = error_detail.strip()
+    body = {"status": "error", "message": message}
+    return standardize_json_response(body=body, status_code=400)
+
+
 exception_handlers = [
     (ClientError, client_error_handler),
     (RequestValidationError, validation_exception_handler),
+    (IntegrityError, integrity_exception_handler),
 ]

@@ -1,7 +1,7 @@
 import asyncio
 from logging import getLogger
 
-import sqlalchemy
+from sqlalchemy.exc import DBAPIError
 
 
 def retry_on_serialization_error(max_retries=3, delay=0.1):
@@ -19,7 +19,7 @@ def retry_on_serialization_error(max_retries=3, delay=0.1):
             while retries <= max_retries:
                 try:
                     return await func(*args, **kwargs)
-                except sqlalchemy.exc.DBAPIError as exc:
+                except DBAPIError as exc:
                     is_serialization_error = "could not serialize access due to concurrent update" in str(exc)
                     if not is_serialization_error:
                         raise
@@ -53,7 +53,7 @@ def retry_on_deadlock_error(max_retries=3, delay=0.1):
             while retries <= max_retries:
                 try:
                     return await func(*args, **kwargs)
-                except sqlalchemy.exc.DBAPIError as exc:
+                except DBAPIError as exc:
                     is_deadlock_error = "deadlock detected" in str(exc)
                     if not is_deadlock_error:
                         raise
