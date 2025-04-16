@@ -16,9 +16,6 @@ def get_current_user(access_token: Annotated[str, Depends(oauth2_scheme)]):
         raise ClientError("Please include a valid 'Authorization: Bearer <token>' header in your request.")
 
     user_id = verify_access_token(access_token)
-    if not user_id:
-        raise ClientError("Access token is invalid")
-
     return AuthenticatedUser(id=user_id)
 
 

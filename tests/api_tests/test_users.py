@@ -47,4 +47,4 @@ async def test_get_user_info_no_authorization_header_fail(new_client):
 async def test_get_user_info_invalid_access_token_fail(new_client):
     res = await new_client.get("/v1/users/me", headers={"Authorization": "Bearer " + "invalid_token"})
     _, message = parse_response_body(res)
-    assert message == "Access token is invalid"
+    assert message == "Invalid access token"
