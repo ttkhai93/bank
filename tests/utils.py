@@ -27,6 +27,11 @@ def working_directory(path):
 
 
 def parse_response_body(response: Response) -> (dict, str):
+    """
+    This function checks and parse the standard response body. See api.schemas.common::JSONResponseBody
+    :param response: dict
+    :return: tuple(data, message)
+    """
     response_body = response.json()
     status = response_body.get("status")
     data = response_body.get("data")

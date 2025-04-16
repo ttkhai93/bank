@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+from fastapi import status
 
 from core.repositories import UserRepository, AssetRepository, AccountRepository
 from tests.utils import parse_response_body
@@ -8,9 +9,10 @@ from tests.utils import parse_response_body
 
 async def test_get_account(new_client):
     res = await new_client.get("/v1/accounts")
+    assert res.status_code == status.HTTP_200_OK
+
     data, _ = parse_response_body(res)
     accounts = data.get("accounts")
-
     assert len(accounts) == 0
 
 
@@ -20,9 +22,10 @@ async def test_create_account(new_client):
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts", json=json)
+    assert res.status_code == status.HTTP_200_OK
+
     data, _ = parse_response_body(res)
     account = data.get("account")
-
     assert json["user_id"] == account["user_id"]
     assert json["asset_id"] == account["asset_id"]
     assert json["amount"] == account["amount"]
@@ -39,17 +42,17 @@ async def test_transfer_success(new_client):
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts/transfer", json=tx_info)
+    assert res.status_code == status.HTTP_200_OK
+
     data, _ = parse_response_body(res)
     transaction = data.get("transaction")
-
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
-
     assert transaction["from_account_id"] == tx_info["from_account_id"]
     assert transaction["to_account_id"] == tx_info["to_account_id"]
     assert transaction["amount"] == tx_info["amount"]
     assert transaction["status"] == "pending"
 
+    from_account = await AccountRepository.get_by_id(from_account["id"])
+    to_account = await AccountRepository.get_by_id(to_account["id"])
     assert from_account["amount"] == json["amount"] - tx_info["amount"]
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
@@ -79,7 +82,6 @@ async def test_transfer_success_in_lost_update_scenario(new_client, url, concurr
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
     to_account = await AccountRepository.get_by_id(to_account["id"])
-
     assert from_account["amount"] == json["amount"] - tx_info["amount"] * concurrent_requests
     assert to_account["amount"] == json["amount"] + tx_info["amount"] * concurrent_requests
     assert from_account["version"] == expected_version
@@ -116,7 +118,6 @@ async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent
 
     from_account = await AccountRepository.get_by_id(from_account["id"])
     to_account = await AccountRepository.get_by_id(to_account["id"])
-
     assert from_account["amount"] == json["amount"]
     assert to_account["amount"] == json["amount"]
     assert from_account["version"] == expected_version
@@ -133,8 +134,9 @@ async def test_transfer_not_enough_funds(new_client):
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts/transfer", json=tx_info)
-    _, message = parse_response_body(res)
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
 
+    _, message = parse_response_body(res)
     assert message == "Account doesn't have enough funds. Amount: {amount}, Transfer amount: {transfer_amount}".format(
         amount=int(from_account["amount"]), transfer_amount=tx_info["amount"]
     )
@@ -153,6 +155,7 @@ async def test_transfer_different_asset_account(new_client):
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts/transfer", json=tx_info)
-    _, message = parse_response_body(res)
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
 
+    _, message = parse_response_body(res)
     assert message == "Cannot transfer to a different asset account."
