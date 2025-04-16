@@ -16,6 +16,37 @@ async def test_get_account(new_client):
     assert len(accounts) == 0
 
 
+async def test_get_account_by_id(new_client):
+    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
+    res = await new_client.post("/v1/accounts", json=json)
+    data, _ = parse_response_body(res)
+    account = data.get("account")
+
+    res = await new_client.get(f"/v1/accounts/{account['id']}")
+    assert res.status_code == status.HTTP_200_OK
+
+    data, _ = parse_response_body(res)
+    assert account == data.get("account")
+
+
+async def test_get_account_transactions(new_client):
+    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
+    res = await new_client.post("/v1/accounts", json=json)
+    data, _ = parse_response_body(res)
+    account = data.get("account")
+
+    res = await new_client.get(f"/v1/accounts/{account['id']}/transactions")
+    assert res.status_code == status.HTTP_200_OK
+
+    data, _ = parse_response_body(res)
+    transactions = data.get("transactions")
+    assert len(transactions) == 0
+
+
 async def test_create_account(new_client):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})

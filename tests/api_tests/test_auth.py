@@ -1,4 +1,5 @@
 from fastapi import status
+
 from ..utils import parse_response_body
 
 
@@ -34,4 +35,14 @@ async def test_get_access_token_invalid_password_fail(new_client):
 
     form_data = {"grant_type": "password", "username": user_info["email"], "password": "wrong password"}
     res = await new_client.post("/v1/auth/new_token", data=form_data)
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+async def test_get_user_info_no_authorization_header_fail(new_client):
+    res = await new_client.get("/v1/users/me")
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+async def test_get_user_info_no_invalid_access_token_fail(new_client):
+    res = await new_client.get("/v1/users/me", headers={"Authorization": "Bearer " + "invalid token"})
     assert res.status_code == status.HTTP_401_UNAUTHORIZED
