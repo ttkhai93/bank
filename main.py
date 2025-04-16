@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
     new_app.include_router(v2_router)
 
     for exc_class, handler in exception_handlers:
-        new_app.exception_handler(exc_class)(handler)
+        new_app.add_exception_handler(exc_class, handler)
 
     return new_app
 
