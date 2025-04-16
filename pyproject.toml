@@ -10,6 +10,7 @@ python_files = "test_*.py"
 python_functions = "test_*"
 
 [tool.coverage.run]
+concurrency = ["greenlet"] # Fix pytest coverage cannot cover async methods
 source = [
     "core",
     "api",
