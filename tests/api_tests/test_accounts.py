@@ -155,7 +155,15 @@ async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent
     assert to_account["version"] == expected_version
 
 
-async def test_transfer_not_enough_funds(new_client):
+@pytest.mark.parametrize(
+    "url",
+    [
+        "/v1/accounts/transfer",
+        "/v2/accounts/transfer_isolation_level",
+        "/v2/accounts/transfer_optimistic_locking",
+    ],
+)
+async def test_transfer_account_not_enough_balance(new_client, url):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})
 
@@ -164,7 +172,7 @@ async def test_transfer_not_enough_funds(new_client):
     to_account = await AccountRepository.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    res = await new_client.post("/v1/accounts/transfer", json=tx_info)
+    res = await new_client.post(url, json=tx_info)
     assert res.status_code == status.HTTP_400_BAD_REQUEST
 
     _, message = parse_response_body(res)
@@ -173,7 +181,15 @@ async def test_transfer_not_enough_funds(new_client):
     )
 
 
-async def test_transfer_different_asset_account(new_client):
+@pytest.mark.parametrize(
+    "url",
+    [
+        "/v1/accounts/transfer",
+        "/v2/accounts/transfer_isolation_level",
+        "/v2/accounts/transfer_optimistic_locking",
+    ],
+)
+async def test_transfer_different_asset_account(new_client, url):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
 
     asset1 = await AssetRepository.create({"code": "asset1", "name": "asset1"})
@@ -185,7 +201,7 @@ async def test_transfer_different_asset_account(new_client):
     to_account = await AccountRepository.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
-    res = await new_client.post("/v1/accounts/transfer", json=tx_info)
+    res = await new_client.post(url, json=tx_info)
     assert res.status_code == status.HTTP_400_BAD_REQUEST
 
     _, message = parse_response_body(res)

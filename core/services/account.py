@@ -25,6 +25,10 @@ async def create_account(account: dict):
     return await AccountRepository.create(account)
 
 
+def account_has_enough_balance(account_balance, transfer_amount):
+    return account_balance >= transfer_amount
+
+
 @retry_on_deadlock_error()
 async def transfer(tx_info: dict):
     async with Transaction():
@@ -35,7 +39,7 @@ async def transfer(tx_info: dict):
         from_account = await AccountRepository.get_by_id(from_account_id, for_update=True)
         to_account = await AccountRepository.get_by_id(to_account_id, for_update=True)
 
-        if from_account["amount"] < amount:
+        if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
                 "Account doesn't have enough funds. Amount: {amount}, Transfer amount: {transfer_amount}".format(
                     amount=int(from_account["amount"]), transfer_amount=amount
@@ -62,7 +66,7 @@ async def transfer_isolation_level(tx_info: dict):
         from_account = await AccountRepository.get_by_id(from_account_id)
         to_account = await AccountRepository.get_by_id(to_account_id)
 
-        if from_account["amount"] < amount:
+        if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
                 "Account doesn't have enough funds. Amount: {amount}, Transfer amount: {transfer_amount}".format(
                     amount=int(from_account["amount"]), transfer_amount=amount
@@ -89,7 +93,7 @@ async def transfer_optimistic_locking(tx_info: dict):
         from_account = await AccountRepository.get_by_id(from_account_id)
         to_account = await AccountRepository.get_by_id(to_account_id)
 
-        if from_account["amount"] < amount:
+        if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
                 "Account doesn't have enough funds. Amount: {amount}, Transfer amount: {transfer_amount}".format(
                     amount=int(from_account["amount"]), transfer_amount=amount
