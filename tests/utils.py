@@ -1,7 +1,18 @@
 import os
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 
 from httpx import Response
+
+from core.db import engine
+
+
+@asynccontextmanager
+async def engine_context(url):
+    try:
+        engine.create(url)
+        yield
+    finally:
+        await engine.dispose()
 
 
 @contextmanager

@@ -1,6 +1,4 @@
-from contextlib import asynccontextmanager
-
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncConnection
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
 _engine: AsyncEngine | None = None
 
@@ -13,17 +11,10 @@ def create(url: str, **kwargs) -> None:
     _engine = create_async_engine(url, **kwargs)
 
 
-def get() -> AsyncEngine:
+def get(**execution_options) -> AsyncEngine:
     if _engine is None:
         raise ValueError("Cannot get the engine because it hasn't been created")
-    return _engine
-
-
-async def get_connection(**execution_options) -> AsyncConnection:
-    engine = get()
-    connection = await engine.connect()
-    connection = await connection.execution_options(**execution_options)
-    return connection
+    return _engine.execution_options(**execution_options)
 
 
 async def dispose() -> None:
@@ -34,12 +25,3 @@ async def dispose() -> None:
 
     await _engine.dispose()
     _engine = None
-
-
-@asynccontextmanager
-async def context(url):
-    try:
-        create(url)
-        yield
-    finally:
-        await dispose()

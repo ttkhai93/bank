@@ -1,4 +1,5 @@
 from contextvars import ContextVar
+from contextlib import asynccontextmanager
 
 from sqlalchemy import CursorResult, Executable
 from sqlalchemy.ext.asyncio import AsyncConnection
@@ -8,33 +9,23 @@ from . import engine
 _ctx_connection = ContextVar("CTX_CONNECTION", default=None)
 
 
-class Transaction:
-    def __init__(self, **execution_options):
-        self.execution_options = execution_options
-        self.ctx_token = None
+@asynccontextmanager
+async def context(**execution_options):
+    conn = engine.get(**execution_options).connect()
 
-    async def __aenter__(self) -> AsyncConnection:
-        connection = await engine.get_connection(**self.execution_options)
-        self.ctx_token = _ctx_connection.set(connection)
+    async with conn:
+        token = _ctx_connection.set(conn)
 
-        await connection.begin()
-        return connection
+        async with conn.begin():
+            yield conn
 
-    async def __aexit__(self, exc_type: type[Exception] | None, exc_val: Exception | None, exc_tb):
-        connection: AsyncConnection = _ctx_connection.get()
-        if exc_type is None:
-            await connection.commit()
-        else:
-            await connection.rollback()
-
-        await connection.close()
-        _ctx_connection.reset(self.ctx_token)
+        _ctx_connection.reset(token)
 
 
 async def execute(statement: Executable) -> CursorResult:
-    connection: AsyncConnection | None = _ctx_connection.get()
-    if connection:
-        return await connection.execute(statement)
+    conn: AsyncConnection | None = _ctx_connection.get()
+    if conn:
+        return await conn.execute(statement)
 
-    async with Transaction():
-        return await execute(statement)
+    async with context() as conn:
+        return await conn.execute(statement)
