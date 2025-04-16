@@ -6,7 +6,7 @@
 
 ## Run tests
 - pip install -r requirements.txt
-- pytest
+- pytest [--cov] [--cov-fail-under=80] [--cov-report=html]
 
 ## Install pre-commit hook
 - pre-commit install
