@@ -15,7 +15,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(app_settings.LOG_LEVEL)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    engine.create(db_settings.DATABASE_URL)
+    engine.create(db_settings.DATABASE_URL, pool_size=db_settings.POOL_SIZE, max_overflow=db_settings.MAX_OVERFLOW)
     yield
     await engine.dispose()
 
