@@ -22,10 +22,10 @@ async def context(**execution_options):
         _ctx_conn.reset(token)
 
 
-async def execute(statement: Executable) -> CursorResult:
-    conn: AsyncConnection | None = _ctx_conn.get()
+async def execute(statement: Executable, **execution_options) -> CursorResult:
+    conn = _ctx_conn.get()
     if conn:
         return await conn.execute(statement)
 
-    async with context() as conn:
+    async with context(**execution_options) as conn:
         return await conn.execute(statement)
