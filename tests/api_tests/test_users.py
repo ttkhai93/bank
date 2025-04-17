@@ -1,15 +1,30 @@
+from pytest import mark
 from fastapi import status
 
 from tests.utils import parse_response_body
+from core.repositories import UserRepository
 
 
-async def test_get_user(new_client):
-    res = await new_client.get("/v1/users")
+@mark.parametrize(
+    "url, expected_users, first_user",
+    [
+        ("/v1/users", 3, "user0@example.com"),
+        ("/v1/users?offset=1&limit=2", 2, "user1@example.com"),
+        ("/v1/users?order_by=email", 3, "user0@example.com"),
+        ("/v1/users?order_by=-email", 3, "user2@example.com"),
+    ],
+)
+async def test_get_user(new_client, url, expected_users, first_user):
+    await UserRepository.create_many([{"email": f"user{i}@example.com", "password": "123456"} for i in range(3)])
+
+    print("url", url)
+    res = await new_client.get(url)
     assert res.status_code == status.HTTP_200_OK
 
     data, _ = parse_response_body(res)
     users = data.get("users")
-    assert len(users) == 0
+    assert len(users) == expected_users
+    assert users[0]["email"] == first_user
 
 
 async def test_create_user(new_client):

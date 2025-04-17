@@ -36,14 +36,13 @@ class BaseRepository:
         if limit:
             statement = statement.limit(limit)
         if order_by:
-            if order_by[:1] not in ["+", "-"]:
-                statement = statement.order_by(order_by)
+            if order_by.startswith("-"):
+                column = order_by.removeprefix("-")
+                statement = statement.order_by(text(f"{column} DESC"))
             else:
-                column = order_by[1:]
-                if order_by[:1] == "+":
-                    statement = statement.order_by(text(f"{column}"))
-                else:
-                    statement = statement.order_by(text(f"{column} DESC"))
+                column = order_by
+                statement = statement.order_by(text(column))
+
         if for_update:
             statement = statement.with_for_update()
 
@@ -62,6 +61,12 @@ class BaseRepository:
         statement = insert(cls.table).values(values).returning(*cls.table.columns.values())
         result = await transaction.execute(statement)
         return _result_to_dict(result)[0]
+
+    @classmethod
+    async def create_many(cls, list_values: list[dict[str, Any]]):
+        statement = insert(cls.table).values(list_values).returning(*cls.table.columns.values())
+        result = await transaction.execute(statement)
+        return _result_to_dict(result)
 
     @classmethod
     async def update(cls, values: dict[str, Any], **column_filters):
