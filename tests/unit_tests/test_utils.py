@@ -1,4 +1,4 @@
-import pytest
+from pytest import raises
 
 from core.utils import hash_password, check_password, create_access_token, verify_access_token
 from core.errors import UnauthorizedError
@@ -21,5 +21,5 @@ def test_create_and_verify_access_token():
 
 
 def test_verify_access_token_fail():
-    with pytest.raises(UnauthorizedError):
+    with raises(UnauthorizedError):
         verify_access_token("mock")

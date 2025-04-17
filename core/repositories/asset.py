@@ -1,5 +1,5 @@
-from ..models import asset
 from .base import BaseRepository
+from ..models import asset
 
 
 class AssetRepository(BaseRepository):

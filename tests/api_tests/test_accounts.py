@@ -1,6 +1,6 @@
 import asyncio
 
-import pytest
+from pytest import mark
 from fastapi import status
 
 from core.repositories import UserRepository, AssetRepository, AccountRepository
@@ -88,7 +88,7 @@ async def test_transfer_success(new_client):
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "url, concurrent_requests, expected_version",
     [
         ("/v1/accounts/transfer", 10, 0),
@@ -119,7 +119,7 @@ async def test_transfer_success_in_lost_update_scenario(new_client, url, concurr
     assert to_account["version"] == expected_version
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "url, concurrent_deadlocks, expected_version",
     [
         ("/v1/accounts/transfer", 2, 0),
@@ -155,7 +155,7 @@ async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent
     assert to_account["version"] == expected_version
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "url",
     [
         "/v1/accounts/transfer",
@@ -181,7 +181,7 @@ async def test_transfer_account_not_enough_balance(new_client, url):
     )
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "url",
     [
         "/v1/accounts/transfer",

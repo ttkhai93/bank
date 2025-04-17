@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import Table, select, insert, update, text
 from arrow import Arrow
 
-from ..db.transaction import execute
+from ..db import transaction
 
 
 class BaseRepository:
@@ -18,7 +18,7 @@ class BaseRepository:
     @staticmethod
     async def execute_text_clause(sql_string: str, **params):
         statement = text(sql_string).bindparams(**params)
-        result = await execute(statement)
+        result = await transaction.execute(statement)
         return _result_to_dict(result)
 
     @classmethod
@@ -47,7 +47,7 @@ class BaseRepository:
         if for_update:
             statement = statement.with_for_update()
 
-        result = await execute(statement)
+        result = await transaction.execute(statement)
         return _result_to_dict(result)
 
     @classmethod
@@ -60,13 +60,13 @@ class BaseRepository:
     @classmethod
     async def create(cls, values: dict[str, Any]):
         statement = insert(cls.table).values(values).returning(*cls.table.columns.values())
-        result = await execute(statement)
+        result = await transaction.execute(statement)
         return _result_to_dict(result)[0]
 
     @classmethod
     async def update(cls, values: dict[str, Any], **column_filters):
         statement = update(cls.table).values(values).filter_by(**column_filters).returning(*cls.table.columns.values())
-        result = await execute(statement)
+        result = await transaction.execute(statement)
         return _result_to_dict(result)
 
     @classmethod

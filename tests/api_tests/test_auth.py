@@ -1,6 +1,6 @@
 from fastapi import status
 
-from ..utils import parse_response_body
+from tests.utils import parse_response_body
 
 
 async def test_oauth2_password_flow_success(new_client):

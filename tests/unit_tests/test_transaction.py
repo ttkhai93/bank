@@ -1,36 +1,39 @@
+from sqlalchemy import text
 from pytest import raises
 
-from core.db import transaction
-from core.db.transaction import _ctx_conn
-from sqlalchemy import text
-
-from ..utils import engine_context
+from core.db import engine, transaction
 
 
-async def test_use_transaction_context_manager(postgres_url):
-    assert _ctx_conn.get() is None
+async def test_use_context_manager(postgres_url):
+    assert transaction._ctx_conn.get() is None
 
-    async with engine_context(postgres_url):
+    try:
+        engine.create(postgres_url)
         async with transaction.context():
             await transaction.execute(text("SELECT 1"))
-            assert _ctx_conn.get()
+            assert transaction._ctx_conn.get()
+    finally:
+        await engine.dispose()
 
-    assert _ctx_conn.get() is None
+    assert transaction._ctx_conn.get() is None
 
 
-async def test_use_transaction_context_manager_without_engine():
+async def test_use_context_manager_without_engine_fail():
     with raises(ValueError):
         async with transaction.context():
             pass
 
 
 async def test_use_execute_function(postgres_url):
-    assert _ctx_conn.get() is None
+    assert transaction._ctx_conn.get() is None
 
-    async with engine_context(postgres_url):
+    try:
+        engine.create(postgres_url)
         await transaction.execute(text("SELECT 1"))
+    finally:
+        await engine.dispose()
 
-    assert _ctx_conn.get() is None
+    assert transaction._ctx_conn.get() is None
 
 
 async def test_use_execute_function_without_engine():

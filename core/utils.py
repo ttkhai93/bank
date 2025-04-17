@@ -5,7 +5,7 @@ import jwt
 import bcrypt
 
 from core.errors import UnauthorizedError
-from settings import app_settings
+from settings import jwt_settings
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +27,14 @@ def check_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(user_id: str) -> str:
     payload = {
         "sub": str(user_id),
-        "exp": datetime.now() + timedelta(minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        "exp": datetime.now() + timedelta(minutes=jwt_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     }
-    return jwt.encode(payload, app_settings.SECRET_KEY, algorithm=app_settings.ACCESS_TOKEN_ALGORITHM)
+    return jwt.encode(payload, jwt_settings.SECRET_KEY, algorithm=jwt_settings.ACCESS_TOKEN_ALGORITHM)
 
 
 def verify_access_token(token: str) -> dict:
     try:
-        return jwt.decode(token, app_settings.SECRET_KEY, algorithms=[app_settings.ACCESS_TOKEN_ALGORITHM])
+        return jwt.decode(token, jwt_settings.SECRET_KEY, algorithms=[jwt_settings.ACCESS_TOKEN_ALGORITHM])
     except jwt.ExpiredSignatureError:
         raise UnauthorizedError("Access token has expired")
     except jwt.InvalidTokenError as exc:

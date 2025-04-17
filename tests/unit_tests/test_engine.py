@@ -1,18 +1,23 @@
 from pytest import raises
 
 from core.db import engine
-from ..utils import engine_context
 
 
 async def test_engine_lifecycle(postgres_url):
-    async with engine_context(postgres_url):
+    try:
+        engine.create(postgres_url)
         assert engine.get()
+    finally:
+        await engine.dispose()
 
 
 async def test_create_engine_when_already_created(postgres_url):
-    async with engine_context(postgres_url):
+    try:
+        engine.create(postgres_url)
         with raises(ValueError):
             engine.create(postgres_url)
+    finally:
+        await engine.dispose()
 
 
 async def test_get_engine_when_not_exists():
