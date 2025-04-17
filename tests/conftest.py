@@ -8,7 +8,6 @@ from alembic import command
 from alembic.config import Config
 
 from core.models.base import metadata
-from settings import db_settings
 from main import app
 from .utils import working_directory
 
@@ -29,18 +28,13 @@ def postgres_url(docker_services, docker_ip):
 
 
 @fixture(scope="session", autouse=True)
-def work_in_project_root():
+def apply_migrations(postgres_url):
+    """Apply migrations at beginning of test session"""
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     with working_directory(project_root):
-        yield
-
-
-@fixture(scope="session", autouse=True)
-def apply_migrations(postgres_url, work_in_project_root):
-    """Apply migrations at beginning of test session"""
-    db_settings.DATABASE_URL = postgres_url
-    config = Config("alembic.ini")
-    command.upgrade(config, "head")
+        config = Config("alembic.ini")
+        config.set_main_option("sqlalchemy.url", postgres_url)
+        command.upgrade(config, "head")
 
 
 @fixture(autouse=True)
@@ -54,7 +48,9 @@ async def reset_db(postgres_url: str):
 
 
 @fixture
-async def new_client():
+async def new_client(postgres_url):
+    app.state.DATABASE_URL = postgres_url
+
     async with app.router.lifespan_context(app):
         async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as client:
             yield client

@@ -14,21 +14,21 @@ logging.getLogger("sqlalchemy.engine").setLevel(app_settings.LOG_LEVEL)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    engine.create(db_settings.DATABASE_URL, pool_size=db_settings.POOL_SIZE, max_overflow=db_settings.MAX_OVERFLOW)
+async def lifespan(app: FastAPI):
+    url = getattr(app.state, "DATABASE_URL", db_settings.DATABASE_URL)
+
+    engine.create(
+        url=url,
+        pool_size=db_settings.POOL_SIZE,
+        max_overflow=db_settings.MAX_OVERFLOW,
+    )
     yield
     await engine.dispose()
 
 
-def create_app() -> FastAPI:
-    new_app = FastAPI(lifespan=lifespan)
-    new_app.include_router(v1_router)
-    new_app.include_router(v2_router)
+app = FastAPI(lifespan=lifespan)
+app.include_router(v1_router)
+app.include_router(v2_router)
 
-    for exc_class, handler in exception_handlers:
-        new_app.add_exception_handler(exc_class, handler)
-
-    return new_app
-
-
-app = create_app()
+for exc_class, handler in exception_handlers:
+    app.add_exception_handler(exc_class, handler)
