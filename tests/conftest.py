@@ -21,7 +21,7 @@ def postgres_url(docker_services, docker_ip):
     def check_connection() -> Connection | None:
         try:
             return asyncio.run(connect(url.replace("+asyncpg", "")))
-        except ConnectionResetError:
+        except ConnectionError:
             return None
 
     docker_services.wait_until_responsive(check=check_connection, timeout=5, pause=0.5)
