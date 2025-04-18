@@ -3,4 +3,4 @@ from ..models import transaction
 
 
 class TransactionRepository(BaseRepository):
-    table = transaction
+    entity = transaction

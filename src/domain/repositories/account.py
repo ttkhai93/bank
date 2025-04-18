@@ -3,4 +3,4 @@ from ..models import account
 
 
 class AccountRepository(BaseRepository):
-    table = account
+    entity = account

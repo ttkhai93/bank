@@ -3,4 +3,4 @@ from ..models import users
 
 
 class UserRepository(BaseRepository):
-    table = users
+    entity = users

@@ -3,4 +3,4 @@ from ..models import asset
 
 
 class AssetRepository(BaseRepository):
-    table = asset
+    entity = asset
