@@ -2,7 +2,7 @@ from pytest import mark
 from fastapi import status
 
 from tests.utils import parse_response_body
-from core.repositories import UserRepository
+from src.domain.repositories import UserRepository
 
 
 @mark.parametrize(

@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from core.db import transaction
-from core.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
-from core.errors import ClientError
-from ..repositories import AccountRepository, TransactionRepository
+from src.infrastructure.database import transaction
+from src.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
+from src.errors import ClientError
+from src.domain.repositories import AccountRepository, TransactionRepository
 
 
 async def get_accounts(**kwargs):

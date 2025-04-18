@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestFormStrict
 
-from core.errors import UnauthorizedError
-from core.utils import verify_access_token
-from api.schemas.auth import AuthenticatedUser
+from src.errors import UnauthorizedError
+from src.utils import verify_access_token
+from src.api.schemas.auth import AuthenticatedUser
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/new_token", auto_error=False)

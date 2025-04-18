@@ -3,7 +3,7 @@ from contextlib import contextmanager, asynccontextmanager
 
 from httpx import Response
 
-from core.db import engine
+from src.infrastructure.database import engine
 
 
 @asynccontextmanager

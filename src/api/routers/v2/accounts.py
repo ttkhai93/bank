@@ -1,6 +1,6 @@
-from core.services import account_service
-from api import StandardAPIRouter
-from api.schemas.account import TransferRequest
+from src.domain.services import account_service
+from src.api import StandardAPIRouter
+from src.api.schemas.account import TransferRequest
 
 
 router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])

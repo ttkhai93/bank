@@ -1,4 +1,4 @@
-from api import StandardAPIRouter
+from src.api import StandardAPIRouter
 from .accounts import router as accounts_router
 
 

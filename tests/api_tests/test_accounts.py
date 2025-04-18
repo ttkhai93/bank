@@ -3,7 +3,7 @@ import asyncio
 from pytest import mark
 from fastapi import status
 
-from core.repositories import UserRepository, AssetRepository, AccountRepository
+from src.domain.repositories import UserRepository, AssetRepository, AccountRepository
 from tests.utils import parse_response_body
 
 

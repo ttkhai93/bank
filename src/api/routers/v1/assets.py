@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import Query
 
-from core.services import asset_service
-from api import StandardAPIRouter
-from api.schemas import CommonQueryParams
-from api.schemas.asset import CreateAssetRequest
+from src.domain.services import asset_service
+from src.api import StandardAPIRouter
+from src.api.schemas import CommonQueryParams
+from src.api.schemas.asset import CreateAssetRequest
 
 router = StandardAPIRouter(prefix="/assets", tags=["Assets"])
 

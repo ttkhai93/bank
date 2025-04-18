@@ -3,10 +3,10 @@ from uuid import UUID
 
 from fastapi import Query
 
-from core.services import account_service
-from api import StandardAPIRouter
-from api.schemas import CommonQueryParams
-from api.schemas.account import CreateAccountRequest, TransferRequest
+from src.domain.services import account_service
+from src.api import StandardAPIRouter
+from src.api.schemas import CommonQueryParams
+from src.api.schemas.account import CreateAccountRequest, TransferRequest
 
 
 router = StandardAPIRouter(prefix="/accounts", tags=["Accounts"])

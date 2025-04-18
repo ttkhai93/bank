@@ -1,4 +1,4 @@
-from ..repositories import AssetRepository
+from src.domain.repositories import AssetRepository
 
 
 async def get_assets(**kwargs):

@@ -3,10 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from core.db import engine
-from settings import app_settings, db_settings
-from api.routers import v1_router, v2_router
-from api.exception_handlers import exception_handlers
+from src.infrastructure.database import engine
+from src.settings import app_settings, db_settings
+from src.api.routers import v1_router, v2_router
+from src.api.exception_handlers import exception_handlers
 
 
 logging.basicConfig(level=app_settings.LOG_LEVEL)

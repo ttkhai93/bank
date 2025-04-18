@@ -12,8 +12,7 @@ python_functions = "test_*"
 [tool.coverage.run]
 concurrency = ["greenlet"] # Fix pytest coverage cannot cover async methods
 source = [
-    "core",
-    "api",
+    "src",
 ]
 omit = [
     "*__init__*"
@@ -22,5 +21,5 @@ omit = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "-v --strict-markers"
+addopts = "-v --strict-markers --cov --cov-fail-under=90"
 env_files = ".env"

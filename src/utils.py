@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import jwt
 import bcrypt
 
-from core.errors import UnauthorizedError
-from settings import jwt_settings
+from src.errors import UnauthorizedError
+from src.settings import jwt_settings
 
 logger = logging.getLogger(__name__)
 

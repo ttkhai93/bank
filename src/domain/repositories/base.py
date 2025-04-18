@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import Table, select, insert, update, text
 from arrow import Arrow
 
-from ..db import transaction
+from src.infrastructure.database import transaction
 
 
 class BaseRepository:
