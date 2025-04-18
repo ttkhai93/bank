@@ -31,6 +31,32 @@ async def test_get_account_by_id(new_client):
     assert account == data.get("account")
 
 
+async def test_get_account_by_id_not_found(new_client):
+    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+
+    res = await new_client.get(f"/v1/accounts/{user['id']}")
+    assert res.status_code == status.HTTP_200_OK
+
+    data, _ = parse_response_body(res)
+    assert data.get("account") is None
+
+
+async def test_archive_account(new_client):
+    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
+    res = await new_client.post("/v1/accounts", json=json)
+    data, _ = parse_response_body(res)
+    account = data.get("account")
+
+    res = await new_client.delete(f"/v1/accounts/{account['id']}")
+    assert res.status_code == status.HTTP_200_OK
+
+    data, _ = parse_response_body(res)
+    account = data.get("account")
+    assert account["archived"] is True
+
+
 async def test_get_account_transactions(new_client):
     user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
     asset = await AssetRepository.create({"code": "example", "name": "example"})

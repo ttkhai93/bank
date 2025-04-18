@@ -40,3 +40,9 @@ async def create_account(body: CreateAccountRequest):
 async def transfer(body: TransferRequest):
     transaction = await account_service.transfer(body.model_dump())
     return {"transaction": transaction}
+
+
+@router.delete("/{id}")
+async def archive_account_by_id(id: UUID):
+    account = await account_service.archive_account_by_id(id)
+    return {"account": account}

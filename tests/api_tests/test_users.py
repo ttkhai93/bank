@@ -17,7 +17,6 @@ from src.domain.repositories import UserRepository
 async def test_get_user(new_client, url, expected_users, first_user):
     await UserRepository.create_many([{"email": f"user{i}@example.com", "password": "123456"} for i in range(3)])
 
-    print("url", url)
     res = await new_client.get(url)
     assert res.status_code == status.HTTP_200_OK
 

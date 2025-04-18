@@ -14,6 +14,11 @@ async def get_account_by_id(account_id: UUID):
     return await AccountRepository.get_by_id(account_id)
 
 
+async def archive_account_by_id(account_id: UUID):
+    accounts = await AccountRepository.archive(id=account_id)
+    return accounts[0]
+
+
 async def get_account_transactions(account_id: UUID):
     account = await AccountRepository.get_by_id(account_id)
 
