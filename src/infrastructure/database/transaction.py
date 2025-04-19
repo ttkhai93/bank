@@ -1,9 +1,9 @@
+from typing import Any
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
 
-from sqlalchemy import Executable
+from sqlalchemy import Executable, CursorResult
 from sqlalchemy.ext.asyncio import AsyncConnection
-from arrow import Arrow
 
 from . import engine
 
@@ -23,22 +23,20 @@ async def context(**execution_options):
         _ctx_conn.reset(token)
 
 
-async def execute(statement: Executable, **execution_options) -> list[dict]:
+async def execute(statement: Executable) -> CursorResult[Any]:
+    """
+    This function executes a database operation inside a transaction.
+
+    If context connection exists, this operation is supposed to belong to a transaction.
+    So, it uses the current connection to execute the operation to ensure transaction atomicity
+
+    Otherwise, it creates a new transaction that executes a single operation
+    :param statement: The statement to be executed
+    :return: List of database records
+    """
     conn = _ctx_conn.get()
-    # If context connection exists, this operation is supposed to belong to a transaction.
-    # So, use the current connection to execute the operation to ensure transaction atomicity
     if conn:
-        return _cursor_result_to_records(await conn.execute(statement))
+        return await conn.execute(statement)
 
-    # Create a new transaction that executes a single operation
-    async with context(**execution_options) as conn:
-        return _cursor_result_to_records(await conn.execute(statement))
-
-
-def _cursor_result_to_records(result):
-    records = [dict(zip(result.keys(), row)) for row in result]
-    for record in records:
-        for field, value in record.items():
-            if isinstance(value, Arrow):
-                record[field] = value.isoformat()
-    return records
+    async with context() as conn:
+        return await conn.execute(statement)

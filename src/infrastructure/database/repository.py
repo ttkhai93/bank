@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import sqlalchemy as sa
+from arrow import Arrow
 
 from .transaction import execute
 
@@ -16,7 +17,8 @@ class EntityRepository:
     @staticmethod
     async def execute_sql_string(sql_string: str, **params):
         stmt = sa.text(sql_string).bindparams(**params)
-        return await execute(stmt)
+        result = await execute(stmt)
+        return _cursor_result_to_records(result)
 
     @classmethod
     async def get(
@@ -41,8 +43,8 @@ class EntityRepository:
                 stmt = stmt.order_by(sa.text(column))
         if for_update:
             stmt = stmt.with_for_update()
-        records = await execute(stmt)
-        return records
+        result = await execute(stmt)
+        return _cursor_result_to_records(result)
 
     @classmethod
     async def get_by_id(cls, record_id: UUID, for_update: bool = False) -> dict | None:
@@ -59,16 +61,25 @@ class EntityRepository:
     @classmethod
     async def create_many(cls, values: dict | list[dict]):
         stmt = sa.insert(cls.entity).values(values).returning(*cls.entity.columns.values())
-        records = await execute(stmt)
-        return records
+        result = await execute(stmt)
+        return _cursor_result_to_records(result)
 
     @classmethod
     async def update(cls, values: dict, **column_filters):
         stmt = sa.update(cls.entity).values(values).filter_by(**column_filters).returning(*cls.entity.columns.values())
-        records = await execute(stmt)
-        return records
+        result = await execute(stmt)
+        return _cursor_result_to_records(result)
 
     @classmethod
     async def archive(cls, **column_filters):
         records = await cls.update({"archived": True}, **column_filters)
         return records
+
+
+def _cursor_result_to_records(result):
+    records = [dict(zip(result.keys(), row)) for row in result]
+    for record in records:
+        for field, value in record.items():
+            if isinstance(value, Arrow):
+                record[field] = value.isoformat()
+    return records
