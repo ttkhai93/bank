@@ -4,20 +4,21 @@
 ```
 bank/
 ├── .github/
-├── alembic/                # Database migrations
-├── src/                    # Source code
+├── alembic/
+├── src/
 │   ├── api/                    # API layer
 │   │   ├── routes/                 # Providing API endpoints
-│   │   └── schemes/                # Validating API requests/responses body
+│   │   ├── schemes/                # Validating API requests/responses body
+│   │   └── security/               # API security 
 │   ├── domain/                 # Domain layer
-│   │   ├── models/                 # Representing domain entity in database tables
-│   │   ├── repositories/           # Interacting with the database via methods corresponding to database operations
-│   │   └── services/               # Business logic
+│   │   ├── entities/               # Representing domain entity in database tables
+│   │   ├── repositories/           # Interacting with the infrastructure layer
+│   │   └── services/               # Business logic, orchestrate multiple repositories, services
 │   ├── infrastructure/         # Infrastructure layer
 │   │   ├── database/               # Connecting to database, execute database operations
-│   └── settings/               # Application settings
-├── tests/                  # Testing
-│   ├── integration_tests/      # Integration tests, calling API routes
+│   └── settings/
+├── tests/
+│   ├── integration_tests/      # Integration tests
 │   ├── unit_tests/             # Unit tests
 │   └── conftest.py             # Config test
 ├── .gitignore
