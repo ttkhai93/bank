@@ -1,4 +1,4 @@
-from src.infrastructure.database.repository import EntityRepository
+from src.infrastructure import EntityRepository
 from ..entities import users
 
 
