@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Table
 
-from .base import metadata, base_columns
+from .utils import metadata, base_columns
 
 
 users = Table(

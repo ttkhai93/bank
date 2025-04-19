@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Query
 
 from src.domain.services import asset_service
-from src.api import StandardAPIRouter
+from src.api.routers.standard_router import StandardAPIRouter
 from src.api.schemas import CommonQueryParams
 from src.api.schemas.asset import CreateAssetRequest
 

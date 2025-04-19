@@ -1,6 +1,6 @@
-from .base import BaseRepository
-from ..models import transaction
+from src.infrastructure.database.repository import EntityRepository
+from ..entities import transaction
 
 
-class TransactionRepository(BaseRepository):
+class TransactionRepository(EntityRepository):
     entity = transaction

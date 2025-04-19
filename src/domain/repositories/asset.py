@@ -1,6 +1,6 @@
-from .base import BaseRepository
-from ..models import asset
+from src.infrastructure.database.repository import EntityRepository
+from ..entities import asset
 
 
-class AssetRepository(BaseRepository):
+class AssetRepository(EntityRepository):
     entity = asset

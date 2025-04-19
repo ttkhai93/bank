@@ -3,10 +3,10 @@ from uuid import UUID
 
 from sqlalchemy import Table, select, insert, update, text
 
-from src.infrastructure.database import transaction
+from . import transaction
 
 
-class BaseRepository:
+class EntityRepository:
     entity: Table = None
 
     def __init_subclass__(cls, **kwargs):

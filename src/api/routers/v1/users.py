@@ -3,10 +3,11 @@ from typing import Annotated
 from fastapi import Query
 
 from src.domain.services import users_service
-from src.api import StandardAPIRouter
+from src.api.routers.standard_router import StandardAPIRouter
 from src.api.schemas import CommonQueryParams
 from src.api.schemas.users import CreateUserRequest, CreateUserResponse
 from src.api.security.oauth2 import AuthenticatedUserAnnotated
+from src.api.security.password import hash_password
 
 
 router = StandardAPIRouter(prefix="/users", tags=["Users"])
@@ -25,5 +26,8 @@ async def get_users(query: Annotated[CommonQueryParams, Query()]):
 
 @router.post("")
 async def create_user(body: CreateUserRequest):
-    user = await users_service.create_user(body.model_dump())
+    user_info = body.model_dump()
+    user_info["password"] = hash_password(user_info["password"])
+
+    user = await users_service.create_user(user_info)
     return {"user": CreateUserResponse(**user)}

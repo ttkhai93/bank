@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Table, ForeignKey, Numeric, Integer, text
 
-from .base import metadata, base_columns
+from .utils import metadata, base_columns
 
 
 account = Table(

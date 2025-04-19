@@ -2,7 +2,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 
-from src.api.json_response.response_body import JSONResponseBody
+from src.api.routers.standard_router import JSONResponseBody
 from .exceptions import ClientError
 
 

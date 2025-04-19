@@ -1,6 +1,6 @@
-from .base import BaseRepository
-from ..models import users
+from src.infrastructure.database.repository import EntityRepository
+from ..entities import users
 
 
-class UserRepository(BaseRepository):
+class UserRepository(EntityRepository):
     entity = users

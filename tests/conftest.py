@@ -7,7 +7,7 @@ from httpx import AsyncClient, ASGITransport
 from alembic import command
 from alembic.config import Config
 
-from src.domain.models.base import metadata
+from src.domain.entities.utils import metadata
 from main import app
 from .utils import working_directory
 

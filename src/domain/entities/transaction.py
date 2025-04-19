@@ -3,7 +3,7 @@ from enum import StrEnum
 from sqlalchemy import Column, Table, ForeignKey, Numeric
 from sqlalchemy.dialects.postgresql import ENUM
 
-from .base import metadata, base_columns, get_enum_values
+from .utils import metadata, base_columns, get_enum_values
 
 
 class TransactionStatus(StrEnum):

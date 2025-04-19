@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import Query
 
 from src.domain.services import account_service
-from src.api import StandardAPIRouter
+from src.api.routers.standard_router import StandardAPIRouter
 from src.api.schemas import CommonQueryParams
 from src.api.schemas.account import CreateAccountRequest, TransferRequest
 

@@ -1,8 +1,4 @@
-import logging
-
 import bcrypt
-
-logger = logging.getLogger(__name__)
 
 
 def hash_password(plain_password: str) -> str:
@@ -14,6 +10,5 @@ def hash_password(plain_password: str) -> str:
 def check_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
-    except ValueError as exc:
-        logger.debug("Exception happens in check_password: %s", exc)
+    except ValueError:
         return False

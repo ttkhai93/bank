@@ -3,8 +3,9 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy import Executable, text
 from sqlalchemy.ext.asyncio import AsyncConnection
+from arrow import Arrow
 
-from . import engine, utils
+from . import engine
 
 _ctx_conn: ContextVar[AsyncConnection | None] = ContextVar("CTX_CONNECTION", default=None)
 
@@ -25,12 +26,21 @@ async def context(**execution_options):
 async def execute(statement: Executable, **execution_options) -> list[dict]:
     conn = _ctx_conn.get()
     if conn:
-        return utils.cursor_result_to_records(await conn.execute(statement))
+        return _cursor_result_to_records(await conn.execute(statement))
 
     async with context(**execution_options) as conn:
-        return utils.cursor_result_to_records(await conn.execute(statement))
+        return _cursor_result_to_records(await conn.execute(statement))
 
 
 async def execute_text_clause(sql_string: str, **params):
     statement = text(sql_string).bindparams(**params)
     return await execute(statement)
+
+
+def _cursor_result_to_records(result):
+    records = [dict(zip(result.keys(), row)) for row in result]
+    for record in records:
+        for field, value in record.items():
+            if isinstance(value, Arrow):
+                record[field] = value.isoformat()
+    return records
