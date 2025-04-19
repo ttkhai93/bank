@@ -36,7 +36,7 @@ def account_has_enough_balance(account_balance, transfer_amount):
 
 @retry_on_deadlock_error()
 async def transfer(tx_info: dict):
-    async with transaction.context():
+    async with transaction.begin():
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
@@ -63,7 +63,7 @@ async def transfer(tx_info: dict):
 @retry_on_deadlock_error()
 @retry_on_serialization_error()
 async def transfer_isolation_level(tx_info: dict):
-    async with transaction.context(isolation_level="REPEATABLE READ"):
+    async with transaction.begin(isolation_level="REPEATABLE READ"):
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
@@ -90,7 +90,7 @@ async def transfer_isolation_level(tx_info: dict):
 @retry_on_deadlock_error()
 @retry_on_version_conflict_error()
 async def transfer_optimistic_locking(tx_info: dict):
-    async with transaction.context():
+    async with transaction.begin():
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]

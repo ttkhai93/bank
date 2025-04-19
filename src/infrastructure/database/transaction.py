@@ -11,7 +11,7 @@ _ctx_conn: ContextVar[AsyncConnection | None] = ContextVar("CTX_CONNECTION", def
 
 
 @asynccontextmanager
-async def context(**execution_options):
+async def begin(**execution_options):
     conn = Engine.get(**execution_options).connect()
 
     async with conn:
@@ -38,5 +38,5 @@ async def execute(statement: Executable) -> CursorResult[Any]:
     if conn:
         return await conn.execute(statement)
 
-    async with context() as conn:
+    async with begin() as conn:
         return await conn.execute(statement)

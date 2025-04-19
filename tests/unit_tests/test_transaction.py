@@ -9,7 +9,7 @@ async def test_use_context_manager(postgres_url):
 
     try:
         Engine.create(postgres_url)
-        async with transaction.context():
+        async with transaction.begin():
             await transaction.execute(text("SELECT 1"))
             assert transaction._ctx_conn.get()
     finally:
@@ -20,7 +20,7 @@ async def test_use_context_manager(postgres_url):
 
 async def test_use_context_manager_without_engine_fail():
     with raises(ValueError):
-        async with transaction.context():
+        async with transaction.begin():
             pass
 
 
