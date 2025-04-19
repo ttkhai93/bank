@@ -25,9 +25,12 @@ async def context(**execution_options):
 
 async def execute(statement: Executable, **execution_options) -> list[dict]:
     conn = _ctx_conn.get()
+    # If context connection exists, this operation is supposed to belong to a transaction.
+    # So, use the current connection to execute the operation to ensure transaction atomicity
     if conn:
         return _cursor_result_to_records(await conn.execute(statement))
 
+    # Create a new transaction that executes a single operation
     async with context(**execution_options) as conn:
         return _cursor_result_to_records(await conn.execute(statement))
 
