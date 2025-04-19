@@ -24,8 +24,8 @@ async def integrity_exception_handler(_, exc: IntegrityError):
     return standardize_json_response(body=body, status_code=400)
 
 
-exception_handlers = [
-    (ClientError, client_error_handler),
-    (RequestValidationError, validation_exception_handler),
-    (IntegrityError, integrity_exception_handler),
-]
+exception_handlers = {
+    ClientError: client_error_handler,
+    RequestValidationError: validation_exception_handler,
+    IntegrityError: integrity_exception_handler,
+}

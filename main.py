@@ -26,9 +26,6 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, exception_handlers=exception_handlers)
 app.include_router(v1_router)
 app.include_router(v2_router)
-
-for exc_class, handler in exception_handlers:
-    app.add_exception_handler(exc_class, handler)
