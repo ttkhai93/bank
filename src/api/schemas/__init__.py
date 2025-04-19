@@ -1,1 +1,1 @@
-from .common import CommonQueryParams, JSONResponseBody
+from .common import CommonQueryParams

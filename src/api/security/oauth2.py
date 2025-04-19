@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestFormStrict
 
-from src.errors import UnauthorizedError
-from src.utils import verify_access_token
+from src.exceptions import UnauthorizedError
+from src.api.security.jwt import verify_access_token
 from src.api.schemas.auth import AuthenticatedUser
 
 

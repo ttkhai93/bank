@@ -1,27 +1,9 @@
-import logging
 from datetime import datetime, timedelta
 
 import jwt
-import bcrypt
 
-from src.errors import UnauthorizedError
+from src.exceptions import UnauthorizedError
 from src.settings import jwt_settings
-
-logger = logging.getLogger(__name__)
-
-
-def hash_password(plain_password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(plain_password.encode(), salt)
-    return hashed_password.decode()
-
-
-def check_password(plain_password: str, hashed_password: str) -> bool:
-    try:
-        return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
-    except ValueError as exc:
-        logger.debug("Exception happens in check_password: %s", exc)
-        return False
 
 
 def create_access_token(user_id: str) -> str:
@@ -37,6 +19,5 @@ def verify_access_token(token: str) -> dict:
         return jwt.decode(token, jwt_settings.SECRET_KEY, algorithms=[jwt_settings.ACCESS_TOKEN_ALGORITHM])
     except jwt.ExpiredSignatureError:
         raise UnauthorizedError("Access token has expired")
-    except jwt.InvalidTokenError as exc:
-        logger.debug(exc)
+    except jwt.InvalidTokenError:
         raise UnauthorizedError("Invalid access token")

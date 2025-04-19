@@ -1,16 +1,10 @@
 import json
-from typing import Any
 
-from fastapi import APIRouter, Request, Response
-from fastapi.routing import APIRoute
+from fastapi import Request, Response
+from fastapi.routing import APIRoute, APIRouter
 from fastapi.responses import JSONResponse
 
-from .schemas import JSONResponseBody
-
-
-def standardize_json_response(body: dict[str, Any], status_code: int = 200) -> JSONResponse:
-    content = JSONResponseBody(**body).model_dump()
-    return JSONResponse(status_code=status_code, content=content)
+from .response_body import JSONResponseBody
 
 
 class StandardAPIRoute(APIRoute):
@@ -22,8 +16,11 @@ class StandardAPIRoute(APIRoute):
             data = json.loads(response.body)
             assert isinstance(data, dict), "Result data should be a dictionary"  # Don't depend on assert for validation
 
-            body = {"status": "success", "data": data or {}}
-            return standardize_json_response(body=body, status_code=response.status_code)
+            if not data:
+                data = {}
+
+            content = JSONResponseBody(status="success", data=data).model_dump()
+            return JSONResponse(status_code=response.status_code, content=content)
 
         return get_request_handler
 

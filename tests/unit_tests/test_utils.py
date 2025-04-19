@@ -1,7 +1,8 @@
 from pytest import raises
 
-from src.utils import hash_password, check_password, create_access_token, verify_access_token
-from src.errors import UnauthorizedError
+from src.api.security.password import hash_password, check_password
+from src.api.security.jwt import create_access_token, verify_access_token
+from src.exceptions import UnauthorizedError
 
 
 def test_hash_and_check_password_success():

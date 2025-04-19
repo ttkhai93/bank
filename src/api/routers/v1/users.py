@@ -6,7 +6,7 @@ from src.domain.services import users_service
 from src.api import StandardAPIRouter
 from src.api.schemas import CommonQueryParams
 from src.api.schemas.users import CreateUserRequest, CreateUserResponse
-from src.api.oauth2 import AuthenticatedUserAnnotated
+from src.api.security.oauth2 import AuthenticatedUserAnnotated
 
 
 router = StandardAPIRouter(prefix="/users", tags=["Users"])

@@ -1,5 +1,5 @@
 from src.domain.repositories import UserRepository
-from src.utils import hash_password, check_password
+from src.api.security.password import hash_password, check_password
 
 
 async def get_users(**kwargs):

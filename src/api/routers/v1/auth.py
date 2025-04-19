@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 
 from src.domain.services import users_service
-from src.utils import create_access_token
+from src.api.security.jwt import create_access_token
 from src.api.schemas.auth import LoginResponse
-from src.api.oauth2 import PasswordRequestFormAnnotated
+from src.api.security.oauth2 import PasswordRequestFormAnnotated
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

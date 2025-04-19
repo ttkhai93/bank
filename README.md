@@ -17,7 +17,7 @@ bank/
 │   │   ├── database/               # Connecting to database, execute database operations
 │   └── settings/               # Application settings
 ├── tests/                  # Testing
-│   ├── api_tests/              # Integration tests, calling API routes
+│   ├── integration_tests/      # Integration tests, calling API routes
 │   ├── unit_tests/             # Unit tests
 │   └── conftest.py             # Config test
 ├── .gitignore
