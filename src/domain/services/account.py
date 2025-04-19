@@ -23,7 +23,7 @@ async def get_account_transactions(account_id: UUID):
     account = await AccountRepository.get_by_id(account_id)
 
     sql = "SELECT * FROM transaction WHERE to_account_id = :account_id or from_account_id = :account_id"
-    return await transaction.execute_text_clause(sql, account_id=account["id"])
+    return await AccountRepository.execute_sql_string(sql, account_id=account["id"])
 
 
 async def create_account(account: dict):

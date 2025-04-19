@@ -1,6 +1,6 @@
 from pytest import raises
 
-from src.infrastructure.database import engine
+from src.infrastructure import engine
 
 
 async def test_engine_lifecycle(postgres_url):

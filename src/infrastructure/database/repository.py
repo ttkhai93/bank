@@ -2,7 +2,7 @@ from uuid import UUID
 
 import sqlalchemy as sa
 
-from . import transaction
+from .transaction import execute
 
 
 class EntityRepository:
@@ -11,7 +11,12 @@ class EntityRepository:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if not hasattr(cls, "entity"):
-            raise AttributeError(f"Class '{cls.__name__}' must define 'table' class attribute")
+            raise AttributeError(f"Class '{cls.__name__}' must define 'entity' class attribute")
+
+    @staticmethod
+    async def execute_sql_string(sql_string: str, **params):
+        stmt = sa.text(sql_string).bindparams(**params)
+        return await execute(stmt)
 
     @classmethod
     async def get(
@@ -36,7 +41,7 @@ class EntityRepository:
                 stmt = stmt.order_by(sa.text(column))
         if for_update:
             stmt = stmt.with_for_update()
-        records = await transaction.execute(stmt)
+        records = await execute(stmt)
         return records
 
     @classmethod
@@ -54,13 +59,13 @@ class EntityRepository:
     @classmethod
     async def create_many(cls, values: dict | list[dict]):
         stmt = sa.insert(cls.entity).values(values).returning(*cls.entity.columns.values())
-        records = await transaction.execute(stmt)
+        records = await execute(stmt)
         return records
 
     @classmethod
     async def update(cls, values: dict, **column_filters):
         stmt = sa.update(cls.entity).values(values).filter_by(**column_filters).returning(*cls.entity.columns.values())
-        records = await transaction.execute(stmt)
+        records = await execute(stmt)
         return records
 
     @classmethod

@@ -1,7 +1,7 @@
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
 
-from sqlalchemy import Executable, text
+from sqlalchemy import Executable
 from sqlalchemy.ext.asyncio import AsyncConnection
 from arrow import Arrow
 
@@ -33,11 +33,6 @@ async def execute(statement: Executable, **execution_options) -> list[dict]:
     # Create a new transaction that executes a single operation
     async with context(**execution_options) as conn:
         return _cursor_result_to_records(await conn.execute(statement))
-
-
-async def execute_text_clause(sql_string: str, **params):
-    statement = text(sql_string).bindparams(**params)
-    return await execute(statement)
 
 
 def _cursor_result_to_records(result):
