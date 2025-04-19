@@ -1,13 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import Table
+import sqlalchemy as sa
 
 from . import transaction
-from . import statements
 
 
 class EntityRepository:
-    entity: Table
+    entity: sa.Table
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -23,7 +22,20 @@ class EntityRepository:
         for_update: bool = False,
         **column_filters,
     ):
-        stmt = statements.select(cls.entity, offset, limit, order_by, for_update, **column_filters)
+        stmt = sa.select(cls.entity).filter_by(**column_filters)
+        if offset:
+            stmt = stmt.offset(offset)
+        if limit:
+            stmt = stmt.limit(limit)
+        if order_by:
+            if order_by.startswith("-"):
+                column = order_by.removeprefix("-")
+                stmt = stmt.order_by(sa.text(f"{column} DESC"))
+            else:
+                column = order_by
+                stmt = stmt.order_by(sa.text(column))
+        if for_update:
+            stmt = stmt.with_for_update()
         records = await transaction.execute(stmt)
         return records
 
@@ -41,13 +53,13 @@ class EntityRepository:
 
     @classmethod
     async def create_many(cls, values: dict | list[dict]):
-        stmt = statements.insert(cls.entity, values)
+        stmt = sa.insert(cls.entity).values(values).returning(*cls.entity.columns.values())
         records = await transaction.execute(stmt)
         return records
 
     @classmethod
     async def update(cls, values: dict, **column_filters):
-        stmt = statements.update(cls.entity, values, **column_filters)
+        stmt = sa.update(cls.entity).values(values).filter_by(**column_filters).returning(*cls.entity.columns.values())
         records = await transaction.execute(stmt)
         return records
 
