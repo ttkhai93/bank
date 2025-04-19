@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.infrastructure.database import engine
+from src.infrastructure import Engine
 from src.settings import db_settings
 from src.api.routers import v1_router, v2_router
 from src.exceptions import exception_handlers
@@ -12,13 +12,13 @@ from src.exceptions import exception_handlers
 async def lifespan(app: FastAPI):
     url = getattr(app.state, "DATABASE_URL", db_settings.DATABASE_URL)
 
-    engine.create(
+    Engine.create(
         url=url,
         pool_size=db_settings.POOL_SIZE,
         max_overflow=db_settings.MAX_OVERFLOW,
     )
     yield
-    await engine.dispose()
+    await Engine.dispose()
 
 
 def create_app() -> FastAPI:

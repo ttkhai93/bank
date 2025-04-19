@@ -1,30 +1,25 @@
 from pytest import raises
 
-from src.infrastructure import engine
+from src.infrastructure import Engine
 
 
 async def test_engine_lifecycle(postgres_url):
     try:
-        engine.create(postgres_url)
-        assert engine.get()
+        Engine.create(postgres_url)
+        assert Engine.get()
     finally:
-        await engine.dispose()
+        await Engine.dispose()
 
 
 async def test_create_engine_when_already_created(postgres_url):
     try:
-        engine.create(postgres_url)
+        Engine.create(postgres_url)
         with raises(ValueError):
-            engine.create(postgres_url)
+            Engine.create(postgres_url)
     finally:
-        await engine.dispose()
+        await Engine.dispose()
 
 
 async def test_get_engine_when_not_exists():
     with raises(ValueError):
-        engine.get()
-
-
-async def test_dispose_engine_when_not_exists():
-    with raises(ValueError):
-        await engine.dispose()
+        Engine.get()

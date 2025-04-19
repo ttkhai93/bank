@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from src.infrastructure.database import transaction
+from src.infrastructure import transaction
 from src.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
 from src.exceptions import ClientError
 from src.domain.repositories import AccountRepository, TransactionRepository

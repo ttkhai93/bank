@@ -5,14 +5,14 @@ from contextlib import asynccontextmanager
 from sqlalchemy import Executable, CursorResult
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from . import engine
+from . import Engine
 
 _ctx_conn: ContextVar[AsyncConnection | None] = ContextVar("CTX_CONNECTION", default=None)
 
 
 @asynccontextmanager
 async def context(**execution_options):
-    conn = engine.get(**execution_options).connect()
+    conn = Engine.get(**execution_options).connect()
 
     async with conn:
         token = _ctx_conn.set(conn)

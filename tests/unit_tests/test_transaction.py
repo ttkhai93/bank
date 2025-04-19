@@ -1,19 +1,19 @@
 from sqlalchemy import text
 from pytest import raises
 
-from src.infrastructure import engine, transaction
+from src.infrastructure import Engine, transaction
 
 
 async def test_use_context_manager(postgres_url):
     assert transaction._ctx_conn.get() is None
 
     try:
-        engine.create(postgres_url)
+        Engine.create(postgres_url)
         async with transaction.context():
             await transaction.execute(text("SELECT 1"))
             assert transaction._ctx_conn.get()
     finally:
-        await engine.dispose()
+        await Engine.dispose()
 
     assert transaction._ctx_conn.get() is None
 
@@ -28,10 +28,10 @@ async def test_use_execute_function(postgres_url):
     assert transaction._ctx_conn.get() is None
 
     try:
-        engine.create(postgres_url)
+        Engine.create(postgres_url)
         await transaction.execute(text("SELECT 1"))
     finally:
-        await engine.dispose()
+        await Engine.dispose()
 
     assert transaction._ctx_conn.get() is None
 
