@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_exponential, wait_random_exponential
+from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_random_exponential
 
 from src.infrastructure import transaction
 from src.exceptions import ClientError
@@ -110,7 +110,7 @@ async def transfer_isolation_level(tx_info: dict):
 @retry(
     retry=retry_if_exception_message(match=r".*Version conflict.*"),
     stop=stop_after_attempt(4),
-    wait=wait_exponential(multiplier=0.1, min=0.1),
+    wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 async def transfer_optimistic_locking(tx_info: dict):
     async with transaction.begin():
