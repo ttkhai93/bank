@@ -23,10 +23,9 @@ class StandardAPIRoute(APIRoute):
         async def get_request_handler(request: Request) -> Response:
             response = await orig_get_request_handler(request)
             data = json.loads(response.body)
-            assert isinstance(data, dict), "Result data should be a dictionary"  # Don't depend on assert for validation
 
-            if not data:
-                data = {}
+            assert isinstance(data, dict)
+            data = data if isinstance(data, dict) else {}
 
             content = JSONResponseBody(status="success", data=data).model_dump()
             return JSONResponse(status_code=response.status_code, content=content)

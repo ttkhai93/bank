@@ -23,3 +23,7 @@ async def test_create_engine_when_already_created(postgres_url):
 async def test_get_engine_when_not_exists():
     with raises(ValueError):
         Engine.get()
+
+
+async def test_dispose_engine_when_not_exists():
+    await Engine.dispose()
