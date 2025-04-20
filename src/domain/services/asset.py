@@ -1,9 +1,9 @@
-from src.domain.repositories import AssetRepository
+from src.domain.repositories import asset_repo
 
 
 async def get_assets(**kwargs):
-    return await AssetRepository.get(**kwargs)
+    return await asset_repo.get(**kwargs)
 
 
 async def create_asset(asset: dict):
-    return await AssetRepository.create(asset)
+    return await asset_repo.create(asset)

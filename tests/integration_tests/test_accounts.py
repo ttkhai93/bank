@@ -3,7 +3,7 @@ import asyncio
 from pytest import mark
 from fastapi import status
 
-from src.domain.repositories import UserRepository, AssetRepository, AccountRepository
+from src.domain.repositories import users_repo, asset_repo, account_repo
 from tests.utils import parse_response_body
 
 
@@ -17,8 +17,8 @@ async def test_get_account(new_client):
 
 
 async def test_get_account_by_id(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts", json=json)
     data, _ = parse_response_body(res)
@@ -32,7 +32,7 @@ async def test_get_account_by_id(new_client):
 
 
 async def test_get_account_by_id_not_found(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
 
     res = await new_client.get(f"/v1/accounts/{user['id']}")
     assert res.status_code == status.HTTP_200_OK
@@ -42,8 +42,8 @@ async def test_get_account_by_id_not_found(new_client):
 
 
 async def test_archive_account(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts", json=json)
     data, _ = parse_response_body(res)
@@ -58,8 +58,8 @@ async def test_archive_account(new_client):
 
 
 async def test_get_account_transactions(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts", json=json)
     data, _ = parse_response_body(res)
@@ -74,8 +74,8 @@ async def test_get_account_transactions(new_client):
 
 
 async def test_create_account(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts", json=json)
@@ -90,12 +90,12 @@ async def test_create_account(new_client):
 
 
 async def test_transfer_success(new_client):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
+    from_account = await account_repo.create(json)
+    to_account = await account_repo.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post("/v1/accounts/transfer", json=tx_info)
@@ -108,8 +108,8 @@ async def test_transfer_success(new_client):
     assert transaction["amount"] == tx_info["amount"]
     assert transaction["status"] == "pending"
 
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
+    from_account = await account_repo.get_by_id(from_account["id"])
+    to_account = await account_repo.get_by_id(to_account["id"])
     assert from_account["amount"] == json["amount"] - tx_info["amount"]
     assert to_account["amount"] == json["amount"] + tx_info["amount"]
 
@@ -123,12 +123,12 @@ async def test_transfer_success(new_client):
     ],
 )
 async def test_transfer_success_in_lost_update_scenario(new_client, url, concurrent_requests, expected_version):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_requests}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
+    from_account = await account_repo.create(json)
+    to_account = await account_repo.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
 
@@ -137,8 +137,8 @@ async def test_transfer_success_in_lost_update_scenario(new_client, url, concurr
         requests.append(new_client.post(url, json=tx_info))
     await asyncio.gather(*requests)
 
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
+    from_account = await account_repo.get_by_id(from_account["id"])
+    to_account = await account_repo.get_by_id(to_account["id"])
     assert from_account["amount"] == json["amount"] - tx_info["amount"] * concurrent_requests
     assert to_account["amount"] == json["amount"] + tx_info["amount"] * concurrent_requests
     assert from_account["version"] == expected_version
@@ -154,12 +154,12 @@ async def test_transfer_success_in_lost_update_scenario(new_client, url, concurr
     ],
 )
 async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent_deadlocks, expected_version):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 1000 * concurrent_deadlocks}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
+    from_account = await account_repo.create(json)
+    to_account = await account_repo.create(json)
 
     tx_info1 = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     tx_info2 = {"from_account_id": str(to_account["id"]), "to_account_id": str(from_account["id"]), "amount": 1000}
@@ -173,8 +173,8 @@ async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent
         )
     await asyncio.gather(*requests)
 
-    from_account = await AccountRepository.get_by_id(from_account["id"])
-    to_account = await AccountRepository.get_by_id(to_account["id"])
+    from_account = await account_repo.get_by_id(from_account["id"])
+    to_account = await account_repo.get_by_id(to_account["id"])
     assert from_account["amount"] == json["amount"]
     assert to_account["amount"] == json["amount"]
     assert from_account["version"] == expected_version
@@ -190,12 +190,12 @@ async def test_transfer_success_in_deadlock_scenario(new_client, url, concurrent
     ],
 )
 async def test_transfer_account_not_enough_balance(new_client, url):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
-    asset = await AssetRepository.create({"code": "example", "name": "example"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
+    asset = await asset_repo.create({"code": "example", "name": "example"})
 
     json = {"user_id": str(user["id"]), "asset_id": str(asset["id"]), "amount": 0}
-    from_account = await AccountRepository.create(json)
-    to_account = await AccountRepository.create(json)
+    from_account = await account_repo.create(json)
+    to_account = await account_repo.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post(url, json=tx_info)
@@ -216,15 +216,15 @@ async def test_transfer_account_not_enough_balance(new_client, url):
     ],
 )
 async def test_transfer_different_asset_account(new_client, url):
-    user = await UserRepository.create({"email": "user@example.com", "password": "123456"})
+    user = await users_repo.create({"email": "user@example.com", "password": "123456"})
 
-    asset1 = await AssetRepository.create({"code": "asset1", "name": "asset1"})
+    asset1 = await asset_repo.create({"code": "asset1", "name": "asset1"})
     json = {"user_id": str(user["id"]), "asset_id": str(asset1["id"]), "amount": 1000}
-    from_account = await AccountRepository.create(json)
+    from_account = await account_repo.create(json)
 
-    asset2 = await AssetRepository.create({"code": "asset2", "name": "asset2"})
+    asset2 = await asset_repo.create({"code": "asset2", "name": "asset2"})
     json = {"user_id": str(user["id"]), "asset_id": str(asset2["id"]), "amount": 1000}
-    to_account = await AccountRepository.create(json)
+    to_account = await account_repo.create(json)
 
     tx_info = {"from_account_id": str(from_account["id"]), "to_account_id": str(to_account["id"]), "amount": 1000}
     res = await new_client.post(url, json=tx_info)

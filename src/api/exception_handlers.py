@@ -2,8 +2,8 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 
-from src.api.routers.standard_router import JSONResponseBody
-from .exceptions import ClientError
+from src.exceptions import ClientError
+from .routers.standard_router import JSONResponseBody
 
 
 async def client_error_handler(_, exc: ClientError):

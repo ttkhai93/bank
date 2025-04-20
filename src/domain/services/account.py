@@ -4,31 +4,31 @@ from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait
 
 from src.infrastructure import transaction
 from src.exceptions import ClientError
-from src.domain.repositories import AccountRepository, TransactionRepository
+from src.domain.repositories import account_repo, transaction_repo
 
 
 async def get_accounts(**kwargs):
-    return await AccountRepository.get(**kwargs)
+    return await account_repo.get(**kwargs)
 
 
 async def get_account_by_id(account_id: UUID):
-    return await AccountRepository.get_by_id(account_id)
+    return await account_repo.get_by_id(account_id)
 
 
 async def archive_account_by_id(account_id: UUID):
-    accounts = await AccountRepository.archive(id=account_id)
+    accounts = await account_repo.archive(id=account_id)
     return accounts[0]
 
 
 async def get_account_transactions(account_id: UUID):
-    account = await AccountRepository.get_by_id(account_id)
+    account = await account_repo.get_by_id(account_id)
 
     sql = "SELECT * FROM transaction WHERE to_account_id = :account_id or from_account_id = :account_id"
-    return await AccountRepository.execute_sql_string(sql, account_id=account["id"])
+    return await account_repo.execute_sql_string(sql, account_id=account["id"])
 
 
 async def create_account(account: dict):
-    return await AccountRepository.create(account)
+    return await account_repo.create(account)
 
 
 def account_has_enough_balance(account_balance, transfer_amount):
@@ -46,8 +46,8 @@ async def transfer(tx_info: dict):
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
 
-        from_account = await AccountRepository.get_by_id(from_account_id, for_update=True)
-        to_account = await AccountRepository.get_by_id(to_account_id, for_update=True)
+        from_account = await account_repo.get_by_id(from_account_id, for_update=True)
+        to_account = await account_repo.get_by_id(to_account_id, for_update=True)
 
         if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
@@ -59,10 +59,10 @@ async def transfer(tx_info: dict):
         if from_account["asset_id"] != to_account["asset_id"]:
             raise ClientError("Cannot transfer to a different asset account.")
 
-        await AccountRepository.update({"amount": from_account["amount"] - amount}, id=from_account_id)
-        await AccountRepository.update({"amount": to_account["amount"] + amount}, id=to_account_id)
+        await account_repo.update({"amount": from_account["amount"] - amount}, id=from_account_id)
+        await account_repo.update({"amount": to_account["amount"] + amount}, id=to_account_id)
 
-        return await TransactionRepository.create(tx_info)
+        return await transaction_repo.create(tx_info)
 
 
 @retry(
@@ -83,8 +83,8 @@ async def transfer_isolation_level(tx_info: dict):
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
 
-        from_account = await AccountRepository.get_by_id(from_account_id)
-        to_account = await AccountRepository.get_by_id(to_account_id)
+        from_account = await account_repo.get_by_id(from_account_id)
+        to_account = await account_repo.get_by_id(to_account_id)
 
         if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
@@ -96,10 +96,10 @@ async def transfer_isolation_level(tx_info: dict):
         if from_account["asset_id"] != to_account["asset_id"]:
             raise ClientError("Cannot transfer to a different asset account.")
 
-        await AccountRepository.update({"amount": from_account["amount"] - amount}, id=from_account_id)
-        await AccountRepository.update({"amount": to_account["amount"] + amount}, id=to_account_id)
+        await account_repo.update({"amount": from_account["amount"] - amount}, id=from_account_id)
+        await account_repo.update({"amount": to_account["amount"] + amount}, id=to_account_id)
 
-        return await TransactionRepository.create(tx_info)
+        return await transaction_repo.create(tx_info)
 
 
 @retry(
@@ -118,8 +118,8 @@ async def transfer_optimistic_locking(tx_info: dict):
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
 
-        from_account = await AccountRepository.get_by_id(from_account_id)
-        to_account = await AccountRepository.get_by_id(to_account_id)
+        from_account = await account_repo.get_by_id(from_account_id)
+        to_account = await account_repo.get_by_id(to_account_id)
 
         if not account_has_enough_balance(account_balance=from_account["amount"], transfer_amount=amount):
             raise ClientError(
@@ -134,12 +134,12 @@ async def transfer_optimistic_locking(tx_info: dict):
         from_account_target_version = from_account["version"]
         to_account_target_version = to_account["version"]
 
-        res1 = await AccountRepository.update(
+        res1 = await account_repo.update(
             {"amount": from_account["amount"] - amount, "version": from_account_target_version + 1},
             id=from_account_id,
             version=from_account_target_version,
         )
-        res2 = await AccountRepository.update(
+        res2 = await account_repo.update(
             {"amount": to_account["amount"] + amount, "version": to_account_target_version + 1},
             id=to_account_id,
             version=to_account_target_version,
@@ -148,4 +148,4 @@ async def transfer_optimistic_locking(tx_info: dict):
         if not res1 or not res2:
             raise ValueError("Version conflict")
 
-        return await TransactionRepository.create(tx_info)
+        return await transaction_repo.create(tx_info)

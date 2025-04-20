@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from src.infrastructure import Engine
 from src.settings import db_settings
 from src.api.routers import v1_router, v2_router
-from src.exceptions import exception_handlers
+from src.api.exception_handlers import exception_handlers
 
 
 @asynccontextmanager

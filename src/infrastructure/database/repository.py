@@ -7,29 +7,23 @@ from .transaction import execute
 
 
 class EntityRepository:
-    entity: sa.Table
+    def __init__(self, entity: sa.Table):
+        self.entity = entity
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if not hasattr(cls, "entity"):
-            raise AttributeError(f"Class '{cls.__name__}' must define 'entity' class attribute")
-
-    @staticmethod
-    async def execute_sql_string(sql_string: str, **params):
+    async def execute_sql_string(self, sql_string: str, **params):
         stmt = sa.text(sql_string).bindparams(**params)
         result = await execute(stmt)
-        return _cursor_result_to_records(result)
+        return self._cursor_result_to_records(result)
 
-    @classmethod
     async def get(
-        cls,
+        self,
         offset: int = None,
         limit: int = None,
         order_by: str = None,
         for_update: bool = False,
         **column_filters,
     ):
-        stmt = sa.select(cls.entity).filter_by(**column_filters)
+        stmt = sa.select(self.entity).filter_by(**column_filters)
         if offset:
             stmt = stmt.offset(offset)
         if limit:
@@ -44,42 +38,39 @@ class EntityRepository:
         if for_update:
             stmt = stmt.with_for_update()
         result = await execute(stmt)
-        return _cursor_result_to_records(result)
+        return self._cursor_result_to_records(result)
 
-    @classmethod
-    async def get_by_id(cls, record_id: UUID, for_update: bool = False) -> dict | None:
-        records = await cls.get(id=record_id, for_update=for_update)
+    async def get_by_id(self, record_id: UUID, for_update: bool = False) -> dict | None:
+        records = await self.get(id=record_id, for_update=for_update)
         if records:
             return records[0]
         return None
 
-    @classmethod
-    async def create(cls, values: dict):
-        records = await cls.create_many(values)
+    async def create(self, values: dict):
+        records = await self.create_many(values)
         return records[0]
 
-    @classmethod
-    async def create_many(cls, values: dict | list[dict]):
-        stmt = sa.insert(cls.entity).values(values).returning(*cls.entity.columns.values())
+    async def create_many(self, values: dict | list[dict]):
+        stmt = sa.insert(self.entity).values(values).returning(*self.entity.columns.values())
         result = await execute(stmt)
-        return _cursor_result_to_records(result)
+        return self._cursor_result_to_records(result)
 
-    @classmethod
-    async def update(cls, values: dict, **column_filters):
-        stmt = sa.update(cls.entity).values(values).filter_by(**column_filters).returning(*cls.entity.columns.values())
+    async def update(self, values: dict, **column_filters):
+        stmt = (
+            sa.update(self.entity).values(values).filter_by(**column_filters).returning(*self.entity.columns.values())
+        )
         result = await execute(stmt)
-        return _cursor_result_to_records(result)
+        return self._cursor_result_to_records(result)
 
-    @classmethod
-    async def archive(cls, **column_filters):
-        records = await cls.update({"archived": True}, **column_filters)
+    async def archive(self, **column_filters):
+        records = await self.update({"archived": True}, **column_filters)
         return records
 
-
-def _cursor_result_to_records(result):
-    records = [dict(zip(result.keys(), row)) for row in result]
-    for record in records:
-        for field, value in record.items():
-            if isinstance(value, Arrow):
-                record[field] = value.isoformat()
-    return records
+    @staticmethod
+    def _cursor_result_to_records(result):
+        records = [dict(zip(result.keys(), row)) for row in result]
+        for record in records:
+            for field, value in record.items():
+                if isinstance(value, Arrow):
+                    record[field] = value.isoformat()
+        return records

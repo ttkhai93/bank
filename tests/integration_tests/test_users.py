@@ -2,7 +2,7 @@ from pytest import mark
 from fastapi import status
 
 from tests.utils import parse_response_body
-from src.domain.repositories import UserRepository
+from src.domain.repositories import users_repo
 
 
 @mark.parametrize(
@@ -15,7 +15,7 @@ from src.domain.repositories import UserRepository
     ],
 )
 async def test_get_user(new_client, url, expected_users, first_user):
-    await UserRepository.create_many([{"email": f"user{i}@example.com", "password": "123456"} for i in range(3)])
+    await users_repo.create_many([{"email": f"user{i}@example.com", "password": "123456"} for i in range(3)])
 
     res = await new_client.get(url)
     assert res.status_code == status.HTTP_200_OK
