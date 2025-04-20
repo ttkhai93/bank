@@ -1,4 +1,8 @@
-from .users import users_repo
-from .account import account_repo
-from .asset import asset_repo
-from .transaction import transaction_repo
+from src.infrastructure.database import EntityRepository, begin as begin_transaction
+from ..entities import users, account, asset, transaction
+
+
+asset_repo = EntityRepository(asset)
+users_repo = EntityRepository(users)
+account_repo = EntityRepository(account)
+transaction_repo = EntityRepository(transaction)

@@ -2,9 +2,8 @@ from uuid import UUID
 
 from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_random_exponential
 
-from src.infrastructure import transaction
 from src.exceptions import ClientError
-from src.domain.repositories import account_repo, transaction_repo
+from src.domain.repositories import begin_transaction, account_repo, transaction_repo
 
 
 async def get_accounts(**kwargs):
@@ -41,7 +40,7 @@ def account_has_enough_balance(account_balance, transfer_amount):
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 async def transfer(tx_info: dict):
-    async with transaction.begin():
+    async with begin_transaction():
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
@@ -78,7 +77,7 @@ async def transfer(tx_info: dict):
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 async def transfer_isolation_level(tx_info: dict):
-    async with transaction.begin(isolation_level="REPEATABLE READ"):
+    async with begin_transaction(isolation_level="REPEATABLE READ"):
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]
@@ -113,7 +112,7 @@ async def transfer_isolation_level(tx_info: dict):
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 async def transfer_optimistic_locking(tx_info: dict):
-    async with transaction.begin():
+    async with begin_transaction():
         from_account_id = tx_info["from_account_id"]
         to_account_id = tx_info["to_account_id"]
         amount = tx_info["amount"]

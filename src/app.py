@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.infrastructure import Engine
+from src.infrastructure.database import Engine
 from src.settings import db_settings
 from src.api.routers import v1_router, v2_router
 from src.api.exception_handlers import exception_handlers

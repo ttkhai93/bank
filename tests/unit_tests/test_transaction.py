@@ -1,7 +1,7 @@
 from sqlalchemy import text
 from pytest import raises
 
-from src.infrastructure import Engine, transaction
+from src.infrastructure.database import Engine, transaction
 
 
 async def test_use_context_manager(postgres_url):
