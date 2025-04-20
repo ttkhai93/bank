@@ -1,7 +1,8 @@
 from uuid import UUID
 
+from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_exponential, wait_random_exponential
+
 from src.infrastructure import transaction
-from src.decorators import retry_on_deadlock_error, retry_on_serialization_error, retry_on_version_conflict_error
 from src.exceptions import ClientError
 from src.domain.repositories import AccountRepository, TransactionRepository
 
@@ -34,7 +35,11 @@ def account_has_enough_balance(account_balance, transfer_amount):
     return account_balance >= transfer_amount
 
 
-@retry_on_deadlock_error()
+@retry(
+    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=0.1, min=0.1),
+)
 async def transfer(tx_info: dict):
     async with transaction.begin():
         from_account_id = tx_info["from_account_id"]
@@ -60,8 +65,18 @@ async def transfer(tx_info: dict):
         return await TransactionRepository.create(tx_info)
 
 
-@retry_on_deadlock_error()
-@retry_on_serialization_error()
+@retry(
+    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=0.1, min=0.1),
+)
+@retry(
+    retry=retry_if_exception_message(
+        match=r".*SerializationError.*could not serialize access due to concurrent update.*"
+    ),
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=0.1, min=0.1),
+)
 async def transfer_isolation_level(tx_info: dict):
     async with transaction.begin(isolation_level="REPEATABLE READ"):
         from_account_id = tx_info["from_account_id"]
@@ -87,8 +102,16 @@ async def transfer_isolation_level(tx_info: dict):
         return await TransactionRepository.create(tx_info)
 
 
-@retry_on_deadlock_error()
-@retry_on_version_conflict_error()
+@retry(
+    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=0.1, min=0.1),
+)
+@retry(
+    retry=retry_if_exception_message(match=r".*Version conflict.*"),
+    stop=stop_after_attempt(4),
+    wait=wait_exponential(multiplier=0.1, min=0.1),
+)
 async def transfer_optimistic_locking(tx_info: dict):
     async with transaction.begin():
         from_account_id = tx_info["from_account_id"]
