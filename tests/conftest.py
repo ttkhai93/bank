@@ -2,6 +2,7 @@ import os
 import asyncio
 
 from asyncpg import connect, Connection
+from redis.asyncio import Redis
 from pytest import fixture
 from httpx import AsyncClient, ASGITransport
 from alembic import command
@@ -27,6 +28,21 @@ def postgres_url(docker_services, docker_ip):
     return url
 
 
+@fixture(scope="session")
+def redis_url(docker_services, docker_ip):
+    host_port = docker_services.port_for("redis", 6379)
+    url = f"redis://{docker_ip}:{host_port}"
+
+    def check_connection() -> Redis | None:
+        try:
+            return Redis.from_url(url)
+        except ConnectionError:
+            return None
+
+    docker_services.wait_until_responsive(check=check_connection, timeout=5, pause=0)
+    return url
+
+
 @fixture(scope="session", autouse=True)
 def apply_migrations(postgres_url):
     """Apply migrations at beginning of test session"""
@@ -48,8 +64,9 @@ async def reset_db(postgres_url: str):
 
 
 @fixture
-async def new_client(postgres_url):
+async def new_client(postgres_url, redis_url):
     app.state.DATABASE_URL = postgres_url
+    app.state.REDIS_URL = redis_url
 
     async with app.router.lifespan_context(app):
         async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as client:

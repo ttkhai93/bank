@@ -8,13 +8,14 @@ from src.api.schemas import CommonQueryParams
 from src.api.schemas.users import CreateUserRequest, CreateUserResponse
 from src.api.security.oauth2 import AuthenticatedUserAnnotated
 from src.api.security.password import hash_password
+from src.api.security.rate_limit import RateLimiter3PerSecond
 
 
 router = StandardAPIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/me")
-async def get_user_info(auth_user: AuthenticatedUserAnnotated):
+async def get_user_info(auth_user: AuthenticatedUserAnnotated, limiter: RateLimiter3PerSecond):
     return {"user_id": auth_user.id}
 
 

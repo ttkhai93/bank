@@ -5,3 +5,8 @@ services:
       - "54321:5432"
     environment:
       POSTGRES_PASSWORD: postgres
+
+  redis:
+    image: "redis:7"
+    ports:
+      - "63791:6379"
