@@ -4,6 +4,7 @@ from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait
 
 from src.exceptions import ClientError
 from src.domain.repositories import begin_transaction, account_repo, transaction_repo
+from src import constants
 
 
 async def get_accounts(**kwargs):
@@ -35,7 +36,7 @@ def account_has_enough_balance(account_balance, transfer_amount):
 
 
 @retry(
-    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    retry=retry_if_exception_message(match=constants.EXC_DB_DEADLOCK_PATTERN),
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
@@ -65,14 +66,12 @@ async def transfer(tx_info: dict):
 
 
 @retry(
-    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    retry=retry_if_exception_message(match=constants.EXC_DB_DEADLOCK_PATTERN),
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 @retry(
-    retry=retry_if_exception_message(
-        match=r".*SerializationError.*could not serialize access due to concurrent update.*"
-    ),
+    retry=retry_if_exception_message(match=constants.EXC_DB_SERIALIZATION_PATTERN),
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
@@ -102,12 +101,12 @@ async def transfer_isolation_level(tx_info: dict):
 
 
 @retry(
-    retry=retry_if_exception_message(match=r".*DeadlockDetectedError.*deadlock detected.*"),
+    retry=retry_if_exception_message(match=constants.EXC_DB_DEADLOCK_PATTERN),
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
 @retry(
-    retry=retry_if_exception_message(match=r".*Version conflict.*"),
+    retry=retry_if_exception_message(match=constants.EXC_VERSION_CONFLICT_PATTERN),
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=0.1, min=0.1),
 )
